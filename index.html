@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Customer Assistant — Architecture Demo</title>
+  <title>Customer Assistant — Demo</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -11,11 +11,13 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     html, body {
-      width: 100%; height: 100%; overflow: hidden;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
       font-family: 'Inter', sans-serif;
     }
 
-    /* ── Layout ─────────────────────────────────────────────── */
+    /* ── Root container ──────────────────────────────────────────── */
     .container {
       display: flex;
       width: 100vw;
@@ -23,7 +25,7 @@
       overflow: hidden;
     }
 
-    /* ── Left Panel ─────────────────────────────────────────── */
+    /* ═══════════════════════ LEFT PANEL ════════════════════════════ */
     .left-panel {
       width: 50%;
       height: 100vh;
@@ -33,13 +35,12 @@
       flex-direction: column;
       align-items: center;
       position: relative;
-      overflow: hidden;
     }
 
     .run-demo-btn {
       margin-top: 20px;
       background: #00897B;
-      color: #fff;
+      color: #FFFFFF;
       border: none;
       border-radius: 10px;
       padding: 10px 28px;
@@ -47,51 +48,29 @@
       font-weight: 600;
       font-family: 'Inter', sans-serif;
       cursor: pointer;
-      transition: background 0.2s, box-shadow 0.2s;
+      letter-spacing: 0.015em;
+      transition: background 0.18s ease, box-shadow 0.18s ease;
       position: relative;
-      z-index: 10;
-      letter-spacing: 0.02em;
+      z-index: 2;
     }
     .run-demo-btn:hover {
-      background: #00695C;
-      box-shadow: 0 4px 18px rgba(0,137,123,0.38);
+      background: #00796B;
+      box-shadow: 0 4px 20px rgba(0, 137, 123, 0.36);
     }
-    .run-demo-btn:active { background: #004D40; }
+    .run-demo-btn:active { background: #00695C; }
     .run-demo-btn:disabled {
       background: #80CBC4;
       cursor: not-allowed;
       box-shadow: none;
     }
 
-    /* Architecture diagram */
-    .arch-diagram {
+    /* Diagram area — reserved, empty at this stage */
+    .diagram-area {
       flex: 1;
       width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 16px 24px 24px;
     }
 
-    #arch-svg { width: 100%; max-width: 560px; height: auto; }
-
-    /* Node highlight animation */
-    .arch-node rect,
-    .arch-node ellipse {
-      transition: stroke 0.35s, stroke-width 0.35s, filter 0.35s;
-    }
-    .arch-node.active rect,
-    .arch-node.active ellipse {
-      stroke: #00897B !important;
-      stroke-width: 2.5 !important;
-      filter: drop-shadow(0 0 7px rgba(0,137,123,0.55));
-    }
-    .arch-arrow line,
-    .arch-arrow path {
-      transition: stroke 0.35s;
-    }
-
-    /* ── Right Panel ─────────────────────────────────────────── */
+    /* ═══════════════════════ RIGHT PANEL ═══════════════════════════ */
     .right-panel {
       width: 50%;
       height: 100vh;
@@ -99,31 +78,44 @@
       overflow: hidden;
     }
 
-    /* Sky gradient — deep bottom, lighter top */
+    /* Deep blue-to-indigo sky gradient */
     .sky-bg {
       position: absolute;
       inset: 0;
       background: linear-gradient(
         to bottom,
-        #4A90D9 0%,
-        #3070B8 18%,
-        #1B3A6B 50%,
-        #0D2248 75%,
+        #4A90D9  0%,
+        #2E68B8 22%,
+        #1B3A6B 52%,
+        #0D2045 76%,
         #0A1628 100%
       );
     }
 
-    /* Horizon glow — warm band ~40% from top */
+    /* Upper atmospheric scattering haze */
+    .sky-upper-haze {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(
+        ellipse 130% 45% at 50% 0%,
+        rgba(120, 190, 255, 0.13) 0%,
+        transparent 70%
+      );
+      pointer-events: none;
+    }
+
+    /* Warm horizon glow band at ~60% height */
     .horizon-glow {
       position: absolute;
-      top: 36%;
-      left: -20%;
-      right: -20%;
-      height: 110px;
+      top: 60%;
+      left: -25%;
+      right: -25%;
+      height: 120px;
+      transform: translateY(-50%);
       background: radial-gradient(
-        ellipse 80% 100% at 50% 50%,
-        rgba(255,238,186,0.22) 0%,
-        rgba(255,210,120,0.10) 45%,
+        ellipse 80% 60px at 50% 50%,
+        rgba(255, 244, 200, 0.21) 0%,
+        rgba(255, 224, 150, 0.10) 45%,
         transparent 100%
       );
       pointer-events: none;
@@ -147,16 +139,17 @@
       pointer-events: none;
     }
 
-    /* ── Chat Widget ─────────────────────────────────────────── */
+    /* ═══════════════════════ CHAT WIDGET ════════════════════════════ */
     .chat-widget {
       position: absolute;
       bottom: 24px;
       right: 24px;
       width: 360px;
       max-height: 520px;
+      height: 520px;
       background: #FFFFFF;
       border-radius: 16px;
-      box-shadow: 0 8px 40px rgba(0,0,0,0.28);
+      box-shadow: 0 8px 40px rgba(0, 0, 0, 0.28);
       display: flex;
       flex-direction: column;
       overflow: hidden;
@@ -168,35 +161,40 @@
     .chat-header {
       background: #00897B;
       border-radius: 16px 16px 0 0;
-      padding: 11px 14px;
+      padding: 12px 14px;
       display: flex;
       align-items: center;
       gap: 10px;
       flex-shrink: 0;
     }
-    .chat-header-icon { width: 34px; height: 34px; flex-shrink: 0; }
+
+    .chat-header-icon { width: 32px; height: 32px; flex-shrink: 0; }
+
     .chat-header-info { flex: 1; min-width: 0; }
+
     .chat-header-title {
-      color: #fff;
+      color: #FFFFFF;
       font-size: 15px;
       font-weight: 600;
       line-height: 1.2;
     }
-    .chat-header-subtitle {
-      color: rgba(255,255,255,0.68);
+
+    .chat-header-sub {
+      color: rgba(255, 255, 255, 0.65);
       font-size: 10.5px;
       margin-top: 1px;
     }
-    .chat-status-dot {
+
+    .status-dot {
       width: 8px;
       height: 8px;
       background: #69F0AE;
       border-radius: 50%;
       flex-shrink: 0;
-      box-shadow: 0 0 7px rgba(105,240,174,0.75);
+      box-shadow: 0 0 7px rgba(105, 240, 174, 0.75);
     }
 
-    /* Messages */
+    /* Message scroll area */
     .chat-messages {
       flex: 1;
       overflow-y: auto;
@@ -209,35 +207,34 @@
     .chat-messages::-webkit-scrollbar { width: 4px; }
     .chat-messages::-webkit-scrollbar-track { background: transparent; }
     .chat-messages::-webkit-scrollbar-thumb {
-      background: #DDD;
+      background: #DEDEDE;
       border-radius: 2px;
     }
 
     /* Bubble rows */
     .msg-row { display: flex; flex-direction: column; }
-    .msg-row.user  { align-items: flex-end; }
+    .msg-row.user      { align-items: flex-end; }
     .msg-row.assistant { align-items: flex-start; }
 
     .bubble {
       max-width: 75%;
       padding: 10px 14px;
+      font-size: 13px;
       line-height: 1.5;
       word-wrap: break-word;
-      font-size: 13px;
     }
     .bubble.user {
       background: #00897B;
-      color: #fff;
+      color: #FFFFFF;
       border-radius: 12px 12px 2px 12px;
     }
     .bubble.assistant {
       background: #F1F3F4;
-      color: #333;
+      color: #333333;
       border-radius: 12px 12px 12px 2px;
     }
 
     /* Typing indicator */
-    .typing-row { align-items: flex-start; }
     .typing-indicator {
       display: flex;
       align-items: center;
@@ -252,16 +249,16 @@
       height: 6px;
       background: #AAAAAA;
       border-radius: 50%;
-      animation: typeBounce 1.1s infinite ease-in-out;
+      animation: typeBounce 1.15s infinite ease-in-out;
     }
-    .typing-dot:nth-child(2) { animation-delay: 0.18s; }
-    .typing-dot:nth-child(3) { animation-delay: 0.36s; }
+    .typing-dot:nth-child(2) { animation-delay: 0.19s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.38s; }
     @keyframes typeBounce {
-      0%, 60%, 100% { transform: translateY(0); opacity: 0.45; }
-      30%            { transform: translateY(-5px); opacity: 1; }
+      0%, 60%, 100% { transform: translateY(0);   opacity: 0.4; }
+      30%            { transform: translateY(-5px); opacity: 1;   }
     }
 
-    /* Input bar (decorative) */
+    /* Decorative input bar */
     .chat-input-bar {
       display: flex;
       align-items: center;
@@ -269,6 +266,7 @@
       border-top: 1px solid #F0F0F0;
       gap: 8px;
       flex-shrink: 0;
+      background: #FFFFFF;
     }
     .chat-input {
       flex: 1;
@@ -280,7 +278,7 @@
       color: #AAAAAA;
       background: #FAFAFA;
       outline: none;
-      cursor: not-allowed;
+      cursor: default;
     }
     .chat-send-btn {
       width: 34px;
@@ -288,11 +286,12 @@
       background: #00897B;
       border: none;
       border-radius: 50%;
-      cursor: not-allowed;
+      cursor: default;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
+      opacity: 0.55;
     }
   </style>
 </head>
@@ -301,234 +300,118 @@
 
   <!-- ═══════════════════════ LEFT PANEL ═══════════════════════ -->
   <div class="left-panel">
-    <button class="run-demo-btn" id="runDemoBtn" onclick="runDemo()">&#9654; Run Demo</button>
-
-    <div class="arch-diagram">
-      <svg id="arch-svg" viewBox="0 0 540 490" fill="none" xmlns="http://www.w3.org/2000/svg">
-
-        <!-- Title -->
-        <text x="270" y="26" text-anchor="middle"
-              font-family="Inter,sans-serif" font-size="13.5" font-weight="700" fill="#1A1A2E">
-          Customer Assistant — System Architecture
-        </text>
-
-        <!-- ── User / Browser ── -->
-        <g id="node-user" class="arch-node">
-          <rect x="185" y="46" width="170" height="52" rx="10"
-                fill="#E8F5E9" stroke="#A5D6A7" stroke-width="1.5"/>
-          <text x="270" y="68" text-anchor="middle"
-                font-family="Inter,sans-serif" font-size="11" font-weight="600" fill="#2E7D32">User / Browser</text>
-          <text x="270" y="85" text-anchor="middle"
-                font-family="Inter,sans-serif" font-size="10" fill="#666">Chat Interface (HTML)</text>
-        </g>
-
-        <!-- User → Gateway -->
-        <g id="arrow-1">
-          <line x1="270" y1="98" x2="270" y2="134"
-                stroke="#CACACA" stroke-width="1.5" marker-end="url(#arrowGray)"/>
-        </g>
-        <text x="277" y="119" font-family="Inter,sans-serif" font-size="9" fill="#AAAAAA">HTTPS / WS</text>
-
-        <!-- ── API Gateway ── -->
-        <g id="node-gateway" class="arch-node">
-          <rect x="165" y="134" width="210" height="52" rx="10"
-                fill="#E3F2FD" stroke="#90CAF9" stroke-width="1.5"/>
-          <text x="270" y="156" text-anchor="middle"
-                font-family="Inter,sans-serif" font-size="11" font-weight="600" fill="#1565C0">API Gateway</text>
-          <text x="270" y="173" text-anchor="middle"
-                font-family="Inter,sans-serif" font-size="10" fill="#666">Rate Limit · Auth · Routing</text>
-        </g>
-
-        <!-- Gateway → NLU -->
-        <g id="arrow-2">
-          <line x1="200" y1="186" x2="120" y2="238"
-                stroke="#CACACA" stroke-width="1.5" marker-end="url(#arrowGray)"/>
-        </g>
-        <!-- Gateway → Orchestrator -->
-        <g id="arrow-3">
-          <line x1="270" y1="186" x2="270" y2="238"
-                stroke="#CACACA" stroke-width="1.5" marker-end="url(#arrowGray)"/>
-        </g>
-        <!-- Gateway → Session -->
-        <g id="arrow-4">
-          <line x1="340" y1="186" x2="418" y2="238"
-                stroke="#CACACA" stroke-width="1.5" marker-end="url(#arrowGray)"/>
-        </g>
-
-        <!-- ── NLU / Intent ── -->
-        <g id="node-nlu" class="arch-node">
-          <rect x="34" y="238" width="170" height="52" rx="10"
-                fill="#FFF8E1" stroke="#FFD54F" stroke-width="1.5"/>
-          <text x="119" y="260" text-anchor="middle"
-                font-family="Inter,sans-serif" font-size="11" font-weight="600" fill="#F57F17">NLU / Intent</text>
-          <text x="119" y="277" text-anchor="middle"
-                font-family="Inter,sans-serif" font-size="10" fill="#666">Entity Extraction</text>
-        </g>
-
-        <!-- ── Orchestrator / LLM ── -->
-        <g id="node-orchestrator" class="arch-node">
-          <rect x="165" y="238" width="210" height="52" rx="10"
-                fill="#EDE7F6" stroke="#B39DDB" stroke-width="1.5"/>
-          <text x="270" y="260" text-anchor="middle"
-                font-family="Inter,sans-serif" font-size="11" font-weight="600" fill="#4527A0">Orchestrator (LLM)</text>
-          <text x="270" y="277" text-anchor="middle"
-                font-family="Inter,sans-serif" font-size="10" fill="#666">Context · Tool Calling</text>
-        </g>
-
-        <!-- NLU → Orchestrator (dashed) -->
-        <g id="arrow-7">
-          <line x1="204" y1="264" x2="167" y2="264"
-                stroke="#CACACA" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrowGray)"/>
-        </g>
-
-        <!-- ── Session Cache ── -->
-        <g id="node-session" class="arch-node">
-          <rect x="338" y="238" width="168" height="52" rx="10"
-                fill="#FCE4EC" stroke="#F48FB1" stroke-width="1.5"/>
-          <text x="422" y="260" text-anchor="middle"
-                font-family="Inter,sans-serif" font-size="11" font-weight="600" fill="#AD1457">Session Cache</text>
-          <text x="422" y="277" text-anchor="middle"
-                font-family="Inter,sans-serif" font-size="10" fill="#666">Redis · Conv. History</text>
-        </g>
-
-        <!-- Orchestrator → Booking -->
-        <g id="arrow-5">
-          <line x1="215" y1="290" x2="135" y2="350"
-                stroke="#CACACA" stroke-width="1.5" marker-end="url(#arrowGray)"/>
-        </g>
-        <!-- Orchestrator → Payment -->
-        <g id="arrow-6">
-          <line x1="325" y1="290" x2="400" y2="350"
-                stroke="#CACACA" stroke-width="1.5" marker-end="url(#arrowGray)"/>
-        </g>
-
-        <!-- ── Booking System ── -->
-        <g id="node-booking" class="arch-node">
-          <rect x="30" y="350" width="190" height="52" rx="10"
-                fill="#E0F7FA" stroke="#80DEEA" stroke-width="1.5"/>
-          <text x="125" y="372" text-anchor="middle"
-                font-family="Inter,sans-serif" font-size="11" font-weight="600" fill="#00838F">Booking System</text>
-          <text x="125" y="389" text-anchor="middle"
-                font-family="Inter,sans-serif" font-size="10" fill="#666">PNR · Flights · Upgrades</text>
-        </g>
-
-        <!-- ── Payment Gateway ── -->
-        <g id="node-payment" class="arch-node">
-          <rect x="320" y="350" width="190" height="52" rx="10"
-                fill="#F3E5F5" stroke="#CE93D8" stroke-width="1.5"/>
-          <text x="415" y="372" text-anchor="middle"
-                font-family="Inter,sans-serif" font-size="11" font-weight="600" fill="#6A1B9A">Payment Gateway</text>
-          <text x="415" y="389" text-anchor="middle"
-                font-family="Inter,sans-serif" font-size="10" fill="#666">Stripe · 3-D Secure</text>
-        </g>
-
-        <!-- Booking → DB -->
-        <g id="arrow-8">
-          <line x1="125" y1="402" x2="210" y2="442"
-                stroke="#CACACA" stroke-width="1.5" marker-end="url(#arrowGray)"/>
-        </g>
-        <!-- Payment → DB -->
-        <g id="arrow-9">
-          <line x1="415" y1="402" x2="330" y2="442"
-                stroke="#CACACA" stroke-width="1.5" marker-end="url(#arrowGray)"/>
-        </g>
-
-        <!-- ── PostgreSQL Database ── -->
-        <g id="node-db" class="arch-node">
-          <rect x="170" y="442" width="200" height="36" rx="10"
-                fill="#EFEBE9" stroke="#BCAAA4" stroke-width="1.5"/>
-          <text x="270" y="465" text-anchor="middle"
-                font-family="Inter,sans-serif" font-size="11" font-weight="600" fill="#4E342E">PostgreSQL Database</text>
-        </g>
-
-        <!-- Marker defs -->
-        <defs>
-          <marker id="arrowGray" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-            <path d="M0,0 L0,6 L8,3 z" fill="#CACACA"/>
-          </marker>
-        </defs>
-      </svg>
-    </div>
+    <button class="run-demo-btn" id="runDemoBtn">&#9654; Run Demo</button>
+    <!-- Architecture diagram will be placed here in subsequent steps -->
+    <div class="diagram-area"></div>
   </div>
 
   <!-- ═══════════════════════ RIGHT PANEL ═══════════════════════ -->
   <div class="right-panel">
 
-    <!-- Sky gradient -->
+    <!-- Base sky gradient -->
     <div class="sky-bg"></div>
 
-    <!-- Horizon glow -->
+    <!-- Atmospheric upper haze -->
+    <div class="sky-upper-haze"></div>
+
+    <!-- Horizon glow band at ~60% -->
     <div class="horizon-glow"></div>
 
-    <!-- Wing & atmosphere SVG -->
-    <svg class="wing-overlay" viewBox="0 0 800 900" preserveAspectRatio="xMidYMid slice"
-         xmlns="http://www.w3.org/2000/svg">
+    <!--
+      Wing shapes: large, sweeping semi-transparent white curves that
+      suggest an aircraft wing or winglet cutting through the sky.
+    -->
+    <svg class="wing-overlay" viewBox="0 0 800 900"
+         preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
 
-      <!-- Large lower wing sweep -->
-      <path d="M-120,900 C80,720 380,640 920,590 L920,900 Z"
-            fill="rgba(255,255,255,0.038)"/>
+      <!-- Main wing body — broad sweep from lower-left to upper-right -->
+      <path d="M -100,880
+               C  100,680  380,590  940,540
+               L  940,620
+               C  380,670  100,760  -100,960 Z"
+            fill="rgba(255,255,255,0.055)"/>
 
-      <!-- Mid wing blade body -->
-      <path d="M-60,800 C140,630 490,550 960,505
-               L960,570 C490,615 140,695 -60,865 Z"
-            fill="rgba(255,255,255,0.052)"/>
-
-      <!-- Upper winglet sweep -->
-      <path d="M210,0 C310,110 390,270 330,435
-               C270,595 185,635 105,715
-               C185,595 248,435 210,0 Z"
+      <!-- Secondary wing layer — slimmer, offset inward -->
+      <path d="M -100,760
+               C  140,580  440,505  960,458
+               L  960,520
+               C  440,568  140,643  -100,824 Z"
             fill="rgba(255,255,255,0.042)"/>
 
-      <!-- Fine leading-edge highlight lines -->
-      <path d="M-120,815 C180,645 490,575 970,525"
-            stroke="rgba(255,255,255,0.14)" stroke-width="1.5" fill="none"/>
-      <path d="M-120,860 C230,705 510,638 970,595"
-            stroke="rgba(255,255,255,0.07)" stroke-width="1" fill="none"/>
-      <path d="M-120,835 C160,670 460,595 970,548"
-            stroke="rgba(255,255,255,0.06)" stroke-width="0.8" fill="none"/>
+      <!-- Leading-edge highlight — thin bright line along wing top -->
+      <path d="M -100,785 C 190,615 490,548 970,500"
+            stroke="rgba(255,255,255,0.17)" stroke-width="1.4" fill="none"/>
 
-      <!-- Cloud wisps top area -->
-      <ellipse cx="90" cy="75" rx="170" ry="22"
-               fill="rgba(255,255,255,0.048)" transform="rotate(-7,90,75)"/>
-      <ellipse cx="130" cy="100" rx="105" ry="14"
-               fill="rgba(255,255,255,0.032)" transform="rotate(-7,130,100)"/>
-      <ellipse cx="420" cy="190" rx="210" ry="17"
-               fill="rgba(255,255,255,0.03)" transform="rotate(-4,420,190)"/>
-      <ellipse cx="620" cy="145" rx="130" ry="12"
-               fill="rgba(255,255,255,0.025)" transform="rotate(-5,620,145)"/>
+      <!-- Soft secondary edge -->
+      <path d="M -100,840 C 240,675 510,612 970,566"
+            stroke="rgba(255,255,255,0.07)" stroke-width="0.9" fill="none"/>
 
-      <!-- Sunray / light shafts from horizon -->
-      <polygon points="400,330 -30,80 60,80"
-               fill="rgba(255,240,190,0.025)"/>
-      <polygon points="400,330 800,60 720,60"
-               fill="rgba(255,240,190,0.02)"/>
-      <polygon points="400,330 350,0 450,0"
-               fill="rgba(255,240,190,0.022)"/>
+      <!-- Upper winglet — sweeping from top-right, curving down -->
+      <path d="M 560,0
+               C 625,75  680,185  715,330
+               C 740,430  750,520  755,600
+               L 740,604
+               C 734,524  724,434  699,334
+               C 663,190  608,80  545,6 Z"
+            fill="rgba(255,255,255,0.055)"/>
 
-      <!-- Thin contrail lines -->
-      <line x1="-50" y1="260" x2="960" y2="195"
-            stroke="rgba(255,255,255,0.09)" stroke-width="1"/>
-      <line x1="-50" y1="275" x2="960" y2="210"
-            stroke="rgba(255,255,255,0.05)" stroke-width="0.7"/>
+      <!-- Secondary winglet, narrower -->
+      <path d="M 660,0
+               C 710,65  748,160  770,290
+               C 785,375  790,455  792,520
+               L 779,522
+               C 777,457  772,378  756,294
+               C 734,165  695,71  647,8 Z"
+            fill="rgba(255,255,255,0.038)"/>
+
+      <!-- Winglet specular edge -->
+      <path d="M 570,0 C 640,90 695,220 728,380 C 745,460 752,540 755,610"
+            stroke="rgba(255,255,255,0.14)" stroke-width="1" fill="none"/>
+
+      <!-- Thin contrail lines cutting across sky -->
+      <line x1="-60" y1="258" x2="970" y2="192"
+            stroke="rgba(255,255,255,0.10)" stroke-width="1"/>
+      <line x1="-60" y1="274" x2="970" y2="208"
+            stroke="rgba(255,255,255,0.055)" stroke-width="0.7"/>
+
+      <!-- Subtle cloud wisps near top -->
+      <ellipse cx="100"  cy="72"  rx="175" ry="21"
+               fill="rgba(255,255,255,0.045)" transform="rotate(-6,100,72)"/>
+      <ellipse cx="145"  cy="98"  rx="108" ry="13"
+               fill="rgba(255,255,255,0.030)" transform="rotate(-6,145,98)"/>
+      <ellipse cx="440"  cy="185" rx="215" ry="16"
+               fill="rgba(255,255,255,0.028)" transform="rotate(-3,440,185)"/>
+      <ellipse cx="650"  cy="140" rx="135" ry="11"
+               fill="rgba(255,255,255,0.024)" transform="rotate(-5,650,140)"/>
+
+      <!-- Subtle sunray shafts from horizon glow -->
+      <polygon points="400,320 -20,75 65,75"
+               fill="rgba(255,240,185,0.020)"/>
+      <polygon points="400,320 800,55 718,55"
+               fill="rgba(255,240,185,0.016)"/>
+      <polygon points="400,320 355,0 445,0"
+               fill="rgba(255,240,185,0.018)"/>
+
     </svg>
 
-    <!-- Stars layer -->
+    <!-- Star field (sparse, upper region only) -->
     <svg class="stars-layer" viewBox="0 0 800 900"
          preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="55"  cy="38"  r="1"   fill="rgba(255,255,255,0.65)"/>
-      <circle cx="180" cy="18"  r="1.2" fill="rgba(255,255,255,0.55)"/>
-      <circle cx="310" cy="55"  r="0.8" fill="rgba(255,255,255,0.7)"/>
-      <circle cx="490" cy="28"  r="1"   fill="rgba(255,255,255,0.5)"/>
-      <circle cx="640" cy="48"  r="0.9" fill="rgba(255,255,255,0.6)"/>
-      <circle cx="745" cy="14"  r="1.1" fill="rgba(255,255,255,0.45)"/>
-      <circle cx="95"  cy="125" r="0.8" fill="rgba(255,255,255,0.42)"/>
-      <circle cx="265" cy="105" r="1"   fill="rgba(255,255,255,0.48)"/>
-      <circle cx="430" cy="90"  r="0.7" fill="rgba(255,255,255,0.52)"/>
-      <circle cx="585" cy="118" r="1"   fill="rgba(255,255,255,0.42)"/>
-      <circle cx="700" cy="88"  r="0.9" fill="rgba(255,255,255,0.5)"/>
-      <circle cx="760" cy="150" r="0.7" fill="rgba(255,255,255,0.38)"/>
-      <circle cx="40"  cy="195" r="0.8" fill="rgba(255,255,255,0.35)"/>
-      <circle cx="350" cy="160" r="0.7" fill="rgba(255,255,255,0.38)"/>
+      <circle cx="52"  cy="36"  r="1.0" fill="rgba(255,255,255,0.68)"/>
+      <circle cx="178" cy="17"  r="1.2" fill="rgba(255,255,255,0.58)"/>
+      <circle cx="308" cy="53"  r="0.8" fill="rgba(255,255,255,0.72)"/>
+      <circle cx="492" cy="27"  r="1.0" fill="rgba(255,255,255,0.52)"/>
+      <circle cx="638" cy="46"  r="0.9" fill="rgba(255,255,255,0.62)"/>
+      <circle cx="748" cy="13"  r="1.1" fill="rgba(255,255,255,0.47)"/>
+      <circle cx="92"  cy="123" r="0.8" fill="rgba(255,255,255,0.44)"/>
+      <circle cx="262" cy="103" r="1.0" fill="rgba(255,255,255,0.50)"/>
+      <circle cx="428" cy="88"  r="0.7" fill="rgba(255,255,255,0.55)"/>
+      <circle cx="584" cy="116" r="1.0" fill="rgba(255,255,255,0.44)"/>
+      <circle cx="702" cy="86"  r="0.9" fill="rgba(255,255,255,0.52)"/>
+      <circle cx="762" cy="152" r="0.7" fill="rgba(255,255,255,0.40)"/>
+      <circle cx="38"  cy="194" r="0.8" fill="rgba(255,255,255,0.37)"/>
+      <circle cx="348" cy="158" r="0.7" fill="rgba(255,255,255,0.40)"/>
+      <circle cx="510" cy="175" r="0.6" fill="rgba(255,255,255,0.33)"/>
     </svg>
 
     <!-- ── Chat Widget ── -->
@@ -536,49 +419,56 @@
 
       <!-- Header -->
       <div class="chat-header">
-        <!-- Bot icon -->
-        <svg class="chat-header-icon" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="17" cy="17" r="16"
-                  fill="rgba(255,255,255,0.14)" stroke="rgba(255,255,255,0.28)" stroke-width="1"/>
-          <!-- Antenna -->
-          <line x1="17" y1="10" x2="17" y2="6.5"
-                stroke="white" stroke-width="1.5" stroke-linecap="round" opacity="0.9"/>
-          <circle cx="17" cy="5.5" r="1.3" fill="white" opacity="0.9"/>
-          <!-- Head / face plate -->
-          <rect x="9" y="10" width="16" height="11" rx="3.5"
-                fill="white" opacity="0.92"/>
-          <!-- Eyes -->
-          <circle cx="13.5" cy="15.5" r="1.8" fill="#00897B"/>
-          <circle cx="20.5" cy="15.5" r="1.8" fill="#00897B"/>
-          <!-- Eye shine -->
-          <circle cx="14.1" cy="14.9" r="0.5" fill="white"/>
-          <circle cx="21.1" cy="14.9" r="0.5" fill="white"/>
+        <!--
+          Bot icon: robot face (circle head) + speech bubble.
+          Pure SVG, no external resources.
+        -->
+        <svg class="chat-header-icon" viewBox="0 0 32 32" fill="none"
+             xmlns="http://www.w3.org/2000/svg">
+          <!-- Outer glow ring -->
+          <circle cx="16" cy="16" r="15"
+                  fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.25)" stroke-width="1"/>
+          <!-- Antenna stem -->
+          <line x1="16" y1="9.5" x2="16" y2="6"
+                stroke="white" stroke-width="1.5" stroke-linecap="round" opacity="0.88"/>
+          <!-- Antenna tip dot -->
+          <circle cx="16" cy="5" r="1.4" fill="white" opacity="0.88"/>
+          <!-- Face plate (rounded rect) -->
+          <rect x="8.5" y="9.5" width="15" height="11" rx="3.5"
+                fill="white" opacity="0.94"/>
+          <!-- Left eye -->
+          <circle cx="13" cy="15" r="1.9" fill="#00897B"/>
+          <circle cx="13.6" cy="14.35" r="0.55" fill="white"/>
+          <!-- Right eye -->
+          <circle cx="19" cy="15" r="1.9" fill="#00897B"/>
+          <circle cx="19.6" cy="14.35" r="0.55" fill="white"/>
           <!-- Speech bubble body -->
-          <rect x="9" y="23" width="16" height="8" rx="3" fill="white" opacity="0.9"/>
-          <!-- Bubble tail -->
-          <path d="M12,23 L10,28 L15.5,23 Z" fill="white" opacity="0.9"/>
-          <!-- Dots in bubble -->
-          <circle cx="14" cy="27" r="1" fill="#00897B" opacity="0.7"/>
-          <circle cx="17" cy="27" r="1" fill="#00897B" opacity="0.7"/>
-          <circle cx="20" cy="27" r="1" fill="#00897B" opacity="0.7"/>
+          <rect x="8.5" y="22" width="15" height="8" rx="3" fill="white" opacity="0.90"/>
+          <!-- Bubble tail (bottom-left) -->
+          <path d="M11,22 L8,28 L14,22 Z" fill="white" opacity="0.90"/>
+          <!-- Bubble dots -->
+          <circle cx="13"   cy="26" r="1.1" fill="#00897B" opacity="0.72"/>
+          <circle cx="16"   cy="26" r="1.1" fill="#00897B" opacity="0.72"/>
+          <circle cx="19"   cy="26" r="1.1" fill="#00897B" opacity="0.72"/>
         </svg>
 
         <div class="chat-header-info">
           <div class="chat-header-title">Customer Assistant</div>
-          <div class="chat-header-subtitle">Powered by AI &nbsp;·&nbsp; Always on</div>
+          <div class="chat-header-sub">Powered by AI &nbsp;·&nbsp; Always on</div>
         </div>
-        <div class="chat-status-dot"></div>
+        <div class="status-dot"></div>
       </div>
 
-      <!-- Messages -->
+      <!-- Messages area -->
       <div class="chat-messages" id="chatMessages"></div>
 
-      <!-- Input bar (decorative) -->
+      <!-- Decorative input bar — purely visual, no function -->
       <div class="chat-input-bar">
-        <input class="chat-input" type="text" placeholder="Type a message…" disabled>
-        <button class="chat-send-btn" disabled>
-          <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"
-               width="16" height="16">
+        <input class="chat-input" type="text"
+               placeholder="Type a message…" disabled>
+        <button class="chat-send-btn" disabled aria-label="Send">
+          <svg viewBox="0 0 16 16" fill="none" width="15" height="15"
+               xmlns="http://www.w3.org/2000/svg">
             <path d="M14 8L2 2L5.2 8L2 14L14 8Z" fill="white"/>
           </svg>
         </button>
@@ -589,73 +479,60 @@
 </div>
 
 <script>
-// ── Conversation ────────────────────────────────────────────────────────────
-const CONVERSATION = [
+// ── Preview conversation ─────────────────────────────────────────────────────
+// A short scripted exchange that plays automatically on load, demonstrating
+// the chat UI. The real conversation and demo logic will be wired up later.
+const PREVIEW = [
   {
     role: 'assistant',
-    text: 'Hello! I\'m your Customer Assistant. How can I help you today?',
-    nodes: ['node-user']
+    text: 'Hello! I\'m your Customer Assistant. How can I help you today?'
   },
   {
     role: 'user',
-    text: 'I need to upgrade my flight to Business Class.',
-    nodes: ['node-user', 'node-gateway']
+    text: 'I need to upgrade my flight to Business Class.'
   },
   {
     role: 'assistant',
-    text: 'I\'d be happy to help with a Business Class upgrade! Could you share your booking reference number?',
-    nodes: ['node-gateway', 'node-nlu', 'node-orchestrator']
+    text: 'Happy to help! Could you share your booking reference number?'
   },
   {
     role: 'user',
-    text: 'Sure — it\'s BA2847X.',
-    nodes: ['node-user', 'node-gateway']
+    text: 'Sure — it\'s BA2847X.'
   },
   {
     role: 'assistant',
-    text: 'Found it! Booking BA2847X: London Heathrow \u2192 New York JFK, 15 March. Business Class upgrade available for \u00a3340. Shall I proceed?',
-    nodes: ['node-orchestrator', 'node-booking', 'node-session']
+    text: 'Found it! BA2847X: London Heathrow → New York JFK, 15 March. Business Class upgrade available for £340. Shall I proceed?'
   },
   {
     role: 'user',
-    text: 'Yes, please go ahead!',
-    nodes: ['node-user', 'node-gateway']
+    text: 'Yes please!'
   },
   {
     role: 'assistant',
-    text: '\u2705 Upgrade confirmed! Your new seat is 4A in Business Class. Enjoy your flight to New York. Bon voyage!',
-    nodes: ['node-orchestrator', 'node-booking', 'node-payment', 'node-db']
+    text: '✅ Upgrade confirmed! Your new seat is 4A in Business Class. Enjoy your flight. Bon voyage!'
   }
 ];
 
-const ALL_NODES = [
-  'node-user','node-gateway','node-nlu','node-orchestrator',
-  'node-session','node-booking','node-payment','node-db'
-];
+// ── DOM helpers ──────────────────────────────────────────────────────────────
+const chatBox = document.getElementById('chatMessages');
 
-let running = false;
-
-function clearNodes() {
-  ALL_NODES.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.classList.remove('active');
-  });
+function scrollBottom() {
+  chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-function activateNodes(ids) {
-  clearNodes();
-  ids.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.classList.add('active');
-  });
-}
-
-function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-
-function appendTypingIndicator() {
-  const wrap = document.getElementById('chatMessages');
+function createBubble(role, text) {
   const row = document.createElement('div');
-  row.className = 'msg-row assistant typing-row';
+  row.className = `msg-row ${role}`;
+  const bubble = document.createElement('div');
+  bubble.className = `bubble ${role}`;
+  bubble.textContent = text;
+  row.appendChild(bubble);
+  return row;
+}
+
+function createTypingRow() {
+  const row = document.createElement('div');
+  row.className = 'msg-row assistant';
   const indicator = document.createElement('div');
   indicator.className = 'typing-indicator';
   for (let i = 0; i < 3; i++) {
@@ -664,62 +541,51 @@ function appendTypingIndicator() {
     indicator.appendChild(dot);
   }
   row.appendChild(indicator);
-  wrap.appendChild(row);
-  wrap.scrollTop = wrap.scrollHeight;
   return row;
 }
 
-function appendBubble(role, text) {
-  const wrap = document.getElementById('chatMessages');
-  const row = document.createElement('div');
-  row.className = `msg-row ${role}`;
-  const bubble = document.createElement('div');
-  bubble.className = `bubble ${role}`;
-  bubble.textContent = text;
-  row.appendChild(bubble);
-  wrap.appendChild(row);
-  wrap.scrollTop = wrap.scrollHeight;
-}
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
-async function runDemo() {
+// ── Playback logic ───────────────────────────────────────────────────────────
+let running = false;
+
+async function play() {
   if (running) return;
   running = true;
 
   const btn = document.getElementById('runDemoBtn');
   btn.disabled = true;
-  btn.textContent = '\u23F3 Running\u2026';
+  btn.textContent = '⏳ Running…';
+  chatBox.innerHTML = '';
 
-  // Reset
-  document.getElementById('chatMessages').innerHTML = '';
-  clearNodes();
-  await sleep(300);
+  await sleep(350);
 
-  for (let i = 0; i < CONVERSATION.length; i++) {
-    const { role, text, nodes } = CONVERSATION[i];
-
-    activateNodes(nodes);
-
+  for (const { role, text } of PREVIEW) {
     if (role === 'assistant') {
-      const typing = appendTypingIndicator();
-      await sleep(850);
-      typing.remove();
-      appendBubble('assistant', text);
-      await sleep(1100);
+      // Show typing indicator for 800ms, then reveal message
+      const typingRow = createTypingRow();
+      chatBox.appendChild(typingRow);
+      scrollBottom();
+      await sleep(800);
+      typingRow.remove();
+      chatBox.appendChild(createBubble('assistant', text));
+      scrollBottom();
+      await sleep(1050);
     } else {
-      appendBubble('user', text);
-      await sleep(650);
+      chatBox.appendChild(createBubble('user', text));
+      scrollBottom();
+      await sleep(620);
     }
   }
 
-  await sleep(700);
-  clearNodes();
   btn.disabled = false;
-  btn.textContent = '\u25B6 Run Demo';
+  btn.textContent = '▶ Run Demo';
   running = false;
 }
 
-// Auto-run after a short delay on load
-window.addEventListener('load', () => setTimeout(runDemo, 600));
+// Wire up button and auto-play on first load
+document.getElementById('runDemoBtn').addEventListener('click', play);
+window.addEventListener('load', () => setTimeout(play, 500));
 </script>
 </body>
 </html>
