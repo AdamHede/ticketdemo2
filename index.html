@@ -3,309 +3,370 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Customer Assistant — Demo</title>
+  <title>ACE Architecture Demo</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
+    /* ─── Reset ─────────────────────────────────────────────────────── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; height: 100%; overflow: hidden; font-family: 'Inter', sans-serif; }
 
-    html, body {
-      width: 100%; height: 100%; overflow: hidden;
-      font-family: 'Inter', sans-serif;
-    }
-
-    .container {
+    /* ─── Root layout: strict 50/50 split ───────────────────────────── */
+    #app {
       display: flex;
-      width: 100vw; height: 100vh;
-      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
     }
 
-    /* ══════════════════════════════════════════
-       LEFT PANEL
-    ══════════════════════════════════════════ */
-    .left-panel {
-      width: 50%; height: 100vh;
-      background: #FFFFFF;
+    /* ════════════════════════════════════════════════════════════════
+       LEFT PANEL — white, architecture diagram
+    ════════════════════════════════════════════════════════════════ */
+    #left {
+      width: 50%;
+      height: 100vh;
+      background: #ffffff;
       border-right: 1px solid #E8E8E8;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      position: relative;
-    }
-
-    .run-demo-btn {
-      margin-top: 20px;
-      background: #00897B; color: #FFFFFF;
-      border: none; border-radius: 10px;
-      padding: 10px 28px;
-      font-size: 14px; font-weight: 600;
-      font-family: 'Inter', sans-serif;
-      cursor: pointer; letter-spacing: 0.015em;
-      transition: background 0.18s, box-shadow 0.18s;
-      flex-shrink: 0; position: relative; z-index: 2;
-    }
-    .run-demo-btn:hover  { background: #00796B; box-shadow: 0 4px 20px rgba(0,137,123,0.36); }
-    .run-demo-btn:active { background: #00695C; }
-    .run-demo-btn:disabled { background: #80CBC4; cursor: not-allowed; box-shadow: none; }
-
-    /* ── Diagram area ── */
-    .diagram-area {
-      flex: 1; width: 100%;
-      position: relative;
-      display: flex; flex-direction: column;
-      justify-content: space-evenly;
-      padding: 8px 14px 12px;
+      align-items: stretch;   /* children fill full width */
       overflow: hidden;
     }
 
-    /* Arrow SVG sits behind all boxes */
-    #arrowsSvg {
-      position: absolute; top: 0; left: 0;
-      pointer-events: none; z-index: 0;
+    /* Run Demo button row */
+    #btn-row {
+      flex-shrink: 0;
+      display: flex;
+      justify-content: center;
+      padding: 18px 0 0;
+    }
+
+    #runDemoBtn {
+      background: #00897B;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 28px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      letter-spacing: 0.015em;
+      transition: background 0.18s, box-shadow 0.18s;
+    }
+    #runDemoBtn:hover   { background: #00796B; box-shadow: 0 4px 20px rgba(0,137,123,0.36); }
+    #runDemoBtn:active  { background: #00695C; }
+    #runDemoBtn:disabled { background: #80CBC4; cursor: not-allowed; box-shadow: none; }
+
+    /* Diagram fills remaining height */
+    #diagram {
+      flex: 1;
+      position: relative;           /* arrow SVG is absolute inside here */
+      display: flex;
+      flex-direction: column;
+      justify-content: space-evenly;
+      padding: 10px 16px 14px;
+      min-height: 0;
+    }
+
+    /* Arrow overlay — sits behind boxes */
+    #arrows {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
       overflow: visible;
     }
 
-    /* ── Layer groups ── */
-    .layer-group {
-      position: relative; z-index: 1;
-      display: flex; flex-direction: column;
+    /* ─── Layer group ─────────────────────────────────────────────── */
+    .layer {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
       width: 100%;
     }
 
     .layer-label {
-      font-size: 11px; font-weight: 600;
-      color: #888888; text-transform: uppercase;
+      font-size: 11px;
+      font-weight: 600;
+      color: #888;
+      text-transform: uppercase;
       letter-spacing: 0.08em;
-      margin-bottom: 6px; white-space: nowrap;
+      margin-bottom: 6px;
+      white-space: nowrap;
     }
 
-    .layer-row {
-      display: flex; gap: 6px; width: 100%;
+    .row {
+      display: flex;
+      gap: 6px;
+      width: 100%;
     }
-    /* Extra breathing room between the two sub-rows in Layer 2 */
-    .layer-row + .layer-row { margin-top: 20px; }
 
-    /* ── Boxes ── */
+    /* Gap between top and bottom sub-rows inside Layer 2 */
+    .row + .row { margin-top: 18px; }
+
+    /* ─── Box ─────────────────────────────────────────────────────── */
     .box {
-      flex: 1; min-width: 0;
+      flex: 1;
+      min-width: 0;
       background: #F7F7F7;
       border: 1.5px solid #D0D0D0;
       border-radius: 10px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.06);
       padding: 8px 6px;
       min-height: 42px;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
       text-align: center;
-      position: relative;
     }
 
-    .box-label {
-      font-size: 12px; font-weight: 600;
-      color: #333333; line-height: 1.3;
-      display: block;
+    .box span.lbl {
+      font-size: 12px;
+      font-weight: 600;
+      color: #333;
+      line-height: 1.3;
     }
 
-    .box-tag {
+    .box span.tag {
       display: block;
-      font-size: 8.5px; font-weight: 600;
-      text-transform: uppercase; letter-spacing: 0.07em;
-      color: #C0C0C0; margin-top: 3px;
+      font-size: 8.5px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: #C0C0C0;
+      margin-top: 3px;
       font-style: normal;
     }
 
-    /* Accent left borders */
-    .accent-teal  { border-left: 3px solid #00897B; }
-    .accent-blue  { border-left: 3px solid #1E88E5; }
-    .accent-amber { border-left: 3px solid #F59E0B; }
+    /* Left-border accents */
+    .teal   { border-left: 3px solid #00897B; }
+    .blue   { border-left: 3px solid #1E88E5; }
+    .amber  { border-left: 3px solid #F59E0B; }
 
-    /* Sunset / deprecated */
-    .sunset                { border: 1.5px dashed #CCCCCC !important; }
-    .sunset .box-label     { color: #AAAAAA; font-style: italic; }
+    /* Sunset / deprecated style */
+    .sunset               { border: 1.5px dashed #CCCCCC !important; }
+    .sunset span.lbl      { color: #AAAAAA; font-style: italic; }
 
-    /* Active highlight (wired in later demo steps) */
+    /* Active highlight (used by demo runner in later steps) */
     .box.active {
-      border-color: #00897B !important; border-width: 2px !important;
+      border-color: #00897B !important;
+      border-width: 2px !important;
       box-shadow: 0 0 0 3px rgba(0,137,123,0.15), 0 2px 6px rgba(0,0,0,0.06);
     }
 
-    /* ══════════════════════════════════════════
-       RIGHT PANEL — sky aesthetic, no chat
-    ══════════════════════════════════════════ */
-    .right-panel {
-      width: 50%; height: 100vh;
-      position: relative; overflow: hidden;
+    /* ════════════════════════════════════════════════════════════════
+       RIGHT PANEL — sky aesthetic only, no chat widget
+    ════════════════════════════════════════════════════════════════ */
+    #right {
+      width: 50%;
+      height: 100vh;
+      position: relative;
+      overflow: hidden;
     }
-    .sky-bg {
+
+    /* Gradient sky: bright top → deep dark bottom */
+    #sky-grad {
       position: absolute; inset: 0;
       background: linear-gradient(to bottom,
-        #4A90D9 0%, #2E68B8 22%, #1B3A6B 52%, #0D2045 76%, #0A1628 100%);
+        #4A90D9  0%,
+        #2E68B8 22%,
+        #1B3A6B 52%,
+        #0D2045 76%,
+        #0A1628 100%
+      );
     }
-    .sky-upper-haze {
+
+    /* Upper atmospheric scattering haze */
+    #sky-haze {
       position: absolute; inset: 0;
       background: radial-gradient(ellipse 130% 45% at 50% 0%,
         rgba(120,190,255,0.13) 0%, transparent 70%);
       pointer-events: none;
     }
-    .horizon-glow {
-      position: absolute; top: 60%; left: -25%; right: -25%; height: 120px;
+
+    /* Warm horizon glow ~60% from top */
+    #horizon {
+      position: absolute;
+      top: 60%; left: -25%; right: -25%; height: 120px;
       transform: translateY(-50%);
       background: radial-gradient(ellipse 80% 60px at 50% 50%,
         rgba(255,244,200,0.21) 0%, rgba(255,224,150,0.10) 45%, transparent 100%);
       pointer-events: none;
     }
-    .wing-overlay, .stars-layer {
-      position: absolute; inset: 0; width: 100%; height: 100%;
+
+    .sky-svg {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
       pointer-events: none;
     }
   </style>
 </head>
 <body>
-<div class="container">
+<div id="app">
 
-  <!-- ══════════════════════════════════════════
-       LEFT PANEL — Architecture Diagram
-  ══════════════════════════════════════════ -->
-  <div class="left-panel">
-    <button class="run-demo-btn" id="runDemoBtn">&#9654; Run Demo</button>
+  <!-- ══════════════════════════════════════════════════════════
+       LEFT PANEL — architecture diagram
+  ══════════════════════════════════════════════════════════════ -->
+  <div id="left">
 
-    <div class="diagram-area" id="diagramArea">
+    <div id="btn-row">
+      <button id="runDemoBtn">&#9654; Run Demo</button>
+    </div>
 
-      <!-- Arrow SVG overlay — populated by drawArrows() -->
-      <svg id="arrowsSvg"></svg>
+    <div id="diagram">
 
-      <!-- ── LAYER 1: INPUTS & TOUCHPOINTS ── -->
-      <div class="layer-group">
+      <!-- Arrows drawn by JS into this SVG -->
+      <svg id="arrows"></svg>
+
+      <!-- ╔══════════════════════════════════════╗
+           ║  LAYER 1 — INPUTS & TOUCHPOINTS      ║
+           ╚══════════════════════════════════════╝ -->
+      <div class="layer">
         <div class="layer-label">Inputs &amp; Touchpoints</div>
-        <div class="layer-row">
-          <div class="box accent-teal" id="node-satair-market">
-            <span class="box-label">Satair Market</span>
+        <div class="row">
+          <div class="box teal"  id="node-satair-market">
+            <span class="lbl">Satair Market</span>
           </div>
-          <div class="box accent-blue" id="node-self-service-portal">
-            <span class="box-label">Self-Service Portal</span>
+          <div class="box blue"  id="node-self-service-portal">
+            <span class="lbl">Self-Service Portal</span>
           </div>
-          <div class="box" id="node-email-intake">
-            <span class="box-label">Email Intake</span>
+          <div class="box"       id="node-email-intake">
+            <span class="lbl">Email Intake</span>
           </div>
-          <div class="box accent-teal" id="node-ai-case-management">
-            <span class="box-label">AI Case Management</span>
+          <div class="box teal"  id="node-ai-case-management">
+            <span class="lbl">AI Case Management</span>
           </div>
-          <div class="box accent-teal" id="node-human-in-the-loop">
-            <span class="box-label">Human in the Loop</span>
+          <div class="box teal"  id="node-human-in-the-loop">
+            <span class="lbl">Human in the Loop</span>
           </div>
         </div>
       </div>
 
-      <!-- ── LAYER 2: AI ORCHESTRATION ── -->
-      <div class="layer-group">
+      <!-- ╔══════════════════════════════════════╗
+           ║  LAYER 2 — AI ORCHESTRATION          ║
+           ╚══════════════════════════════════════╝ -->
+      <div class="layer">
         <div class="layer-label">AI Orchestration</div>
-        <!-- Top sub-row: orchestration core -->
-        <div class="layer-row">
-          <div class="box accent-amber" id="node-session-manager">
-            <span class="box-label">Session Manager</span>
+        <!-- top sub-row: orchestration core -->
+        <div class="row">
+          <div class="box amber" id="node-session-manager">
+            <span class="lbl">Session Manager</span>
           </div>
-          <div class="box accent-amber" id="node-ace-ai-orchestrator">
-            <span class="box-label">ACE AI Orchestrator</span>
+          <div class="box amber" id="node-ace-ai-orchestrator">
+            <span class="lbl">ACE AI Orchestrator</span>
           </div>
-          <div class="box accent-amber" id="node-llm-service">
-            <span class="box-label">LLM Service</span>
+          <div class="box amber" id="node-llm-service">
+            <span class="lbl">LLM Service</span>
           </div>
         </div>
-        <!-- Bottom sub-row: tool belt -->
-        <div class="layer-row">
-          <div class="box accent-amber" id="node-session-state">
-            <span class="box-label">Session State</span>
+        <!-- bottom sub-row: tool belt -->
+        <div class="row">
+          <div class="box amber" id="node-session-state">
+            <span class="lbl">Session State</span>
           </div>
-          <div class="box accent-amber" id="node-ticket-tool">
-            <span class="box-label">Ticket Tool</span>
+          <div class="box amber" id="node-ticket-tool">
+            <span class="lbl">Ticket Tool</span>
           </div>
-          <div class="box accent-amber" id="node-sap-lookup-tool">
-            <span class="box-label">SAP Lookup Tool</span>
+          <div class="box amber" id="node-sap-lookup-tool">
+            <span class="lbl">SAP Lookup Tool</span>
           </div>
-          <div class="box accent-amber" id="node-knowledge-tool">
-            <span class="box-label">Knowledge Tool</span>
+          <div class="box amber" id="node-knowledge-tool">
+            <span class="lbl">Knowledge Tool</span>
           </div>
-          <div class="box accent-amber" id="node-case-history-tool">
-            <span class="box-label">Case History Tool</span>
+          <div class="box amber" id="node-case-history-tool">
+            <span class="lbl">Case History Tool</span>
           </div>
-          <div class="box accent-amber" id="node-response-draft-tool">
-            <span class="box-label">Response Draft Tool</span>
+          <div class="box amber" id="node-response-draft-tool">
+            <span class="lbl">Response Draft Tool</span>
           </div>
         </div>
       </div>
 
-      <!-- ── LAYER 3: INTEGRATION LAYER ── -->
-      <div class="layer-group">
+      <!-- ╔══════════════════════════════════════╗
+           ║  LAYER 3 — INTEGRATION LAYER         ║
+           ╚══════════════════════════════════════╝ -->
+      <div class="layer">
         <div class="layer-label">Integration Layer</div>
-        <div class="layer-row">
-          <div class="box" id="node-case-management-adapter">
-            <span class="box-label">Case Management Adapter</span>
+        <div class="row">
+          <div class="box"        id="node-case-management-adapter">
+            <span class="lbl">Case Management Adapter</span>
           </div>
-          <div class="box" id="node-sap-adapters">
-            <span class="box-label">SAP Adapters</span>
+          <div class="box"        id="node-sap-adapters">
+            <span class="lbl">SAP Adapters</span>
           </div>
-          <div class="box" id="node-knowledge-doc-adapters">
-            <span class="box-label">Knowledge &amp; Doc Adapters</span>
+          <div class="box"        id="node-knowledge-doc-adapters">
+            <span class="lbl">Knowledge &amp; Doc Adapters</span>
           </div>
           <div class="box sunset" id="node-llm-adapter">
-            <span class="box-label">LLM Adapter</span>
-            <span class="box-tag">sunset</span>
+            <span class="lbl">LLM Adapter</span>
+            <span class="tag">sunset</span>
           </div>
           <div class="box sunset" id="node-legacy-automation">
-            <span class="box-label">Legacy Automation</span>
-            <span class="box-tag">sunset</span>
+            <span class="lbl">Legacy Automation</span>
+            <span class="tag">sunset</span>
           </div>
         </div>
       </div>
 
-      <!-- ── LAYER 4: CORE SYSTEMS ── -->
-      <div class="layer-group">
+      <!-- ╔══════════════════════════════════════╗
+           ║  LAYER 4 — CORE SYSTEMS              ║
+           ╚══════════════════════════════════════╝ -->
+      <div class="layer">
         <div class="layer-label">Core Systems</div>
-        <div class="layer-row">
-          <div class="box" id="node-freshdesk">
-            <span class="box-label">Freshdesk</span>
+        <div class="row">
+          <div class="box"        id="node-freshdesk">
+            <span class="lbl">Freshdesk</span>
           </div>
-          <div class="box" id="node-sap-rpr">
-            <span class="box-label">SAP-RPR</span>
+          <div class="box"        id="node-sap-rpr">
+            <span class="lbl">SAP-RPR</span>
           </div>
-          <div class="box" id="node-sap-ap1">
-            <span class="box-label">SAP-AP1</span>
+          <div class="box"        id="node-sap-ap1">
+            <span class="lbl">SAP-AP1</span>
           </div>
-          <div class="box" id="node-sap-cc">
-            <span class="box-label">SAP-CC</span>
+          <div class="box"        id="node-sap-cc">
+            <span class="lbl">SAP-CC</span>
           </div>
-          <div class="box" id="node-symbio">
-            <span class="box-label">Symbio</span>
+          <div class="box"        id="node-symbio">
+            <span class="lbl">Symbio</span>
           </div>
           <div class="box sunset" id="node-lilly">
-            <span class="box-label">LILLY</span>
-            <span class="box-tag">to be replaced</span>
+            <span class="lbl">LILLY</span>
+            <span class="tag">to be replaced</span>
           </div>
         </div>
       </div>
 
-    </div><!-- /diagram-area -->
-  </div><!-- /left-panel -->
+    </div><!-- /#diagram -->
+  </div><!-- /#left -->
 
-  <!-- ══════════════════════════════════════════
-       RIGHT PANEL — Sky aesthetic (chat removed)
-  ══════════════════════════════════════════ -->
-  <div class="right-panel">
-    <div class="sky-bg"></div>
-    <div class="sky-upper-haze"></div>
-    <div class="horizon-glow"></div>
+  <!-- ══════════════════════════════════════════════════════════
+       RIGHT PANEL — dramatic sky aesthetic, no chat
+  ══════════════════════════════════════════════════════════════ -->
+  <div id="right">
+    <div id="sky-grad"></div>
+    <div id="sky-haze"></div>
+    <div id="horizon"></div>
 
-    <svg class="wing-overlay" viewBox="0 0 800 900"
+    <!-- Wing shapes: large, sweeping semi-transparent white curves -->
+    <svg class="sky-svg" viewBox="0 0 800 900"
          preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+      <!-- Main wing body -->
       <path d="M -100,880 C 100,680 380,590 940,540 L 940,620 C 380,670 100,760 -100,960 Z"
             fill="rgba(255,255,255,0.055)"/>
+      <!-- Secondary wing layer -->
       <path d="M -100,760 C 140,580 440,505 960,458 L 960,520 C 440,568 140,643 -100,824 Z"
             fill="rgba(255,255,255,0.042)"/>
+      <!-- Leading-edge highlight -->
       <path d="M -100,785 C 190,615 490,548 970,500"
             stroke="rgba(255,255,255,0.17)" stroke-width="1.4" fill="none"/>
       <path d="M -100,840 C 240,675 510,612 970,566"
             stroke="rgba(255,255,255,0.07)" stroke-width="0.9" fill="none"/>
+      <!-- Upper winglet sweeping from top-right -->
       <path d="M 560,0 C 625,75 680,185 715,330 C 740,430 750,520 755,600
                L 740,604 C 734,524 724,434 699,334 C 663,190 608,80 545,6 Z"
             fill="rgba(255,255,255,0.055)"/>
@@ -314,21 +375,25 @@
             fill="rgba(255,255,255,0.038)"/>
       <path d="M 570,0 C 640,90 695,220 728,380 C 745,460 752,540 755,610"
             stroke="rgba(255,255,255,0.14)" stroke-width="1" fill="none"/>
+      <!-- Contrail lines -->
       <line x1="-60" y1="258" x2="970" y2="192"
             stroke="rgba(255,255,255,0.10)" stroke-width="1"/>
       <line x1="-60" y1="274" x2="970" y2="208"
             stroke="rgba(255,255,255,0.055)" stroke-width="0.7"/>
+      <!-- Cloud wisps -->
       <ellipse cx="100" cy="72" rx="175" ry="21"
                fill="rgba(255,255,255,0.045)" transform="rotate(-6,100,72)"/>
       <ellipse cx="145" cy="98" rx="108" ry="13"
                fill="rgba(255,255,255,0.030)" transform="rotate(-6,145,98)"/>
       <ellipse cx="440" cy="185" rx="215" ry="16"
                fill="rgba(255,255,255,0.028)" transform="rotate(-3,440,185)"/>
-      <polygon points="400,320 -20,75 65,75"   fill="rgba(255,240,185,0.020)"/>
-      <polygon points="400,320 800,55 718,55"   fill="rgba(255,240,185,0.016)"/>
+      <!-- Sunray shafts -->
+      <polygon points="400,320 -20,75 65,75"  fill="rgba(255,240,185,0.020)"/>
+      <polygon points="400,320 800,55 718,55" fill="rgba(255,240,185,0.016)"/>
     </svg>
 
-    <svg class="stars-layer" viewBox="0 0 800 900"
+    <!-- Sparse star field (upper region) -->
+    <svg class="sky-svg" viewBox="0 0 800 900"
          preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
       <circle cx="52"  cy="36"  r="1.0" fill="rgba(255,255,255,0.68)"/>
       <circle cx="178" cy="17"  r="1.2" fill="rgba(255,255,255,0.58)"/>
@@ -345,101 +410,109 @@
       <circle cx="38"  cy="194" r="0.8" fill="rgba(255,255,255,0.37)"/>
       <circle cx="348" cy="158" r="0.7" fill="rgba(255,255,255,0.40)"/>
     </svg>
-  </div><!-- /right-panel -->
+  </div><!-- /#right -->
 
-</div><!-- /container -->
+</div><!-- /#app -->
 
 <script>
-// ── Arrow drawing ──────────────────────────────────────────────────────────
+// ── Arrow drawing ─────────────────────────────────────────────────────────
+// All coordinates are computed live from getBoundingClientRect so they
+// are always accurate regardless of viewport size.
+
 function drawArrows() {
-  const svg = document.getElementById('arrowsSvg');
-  const container = document.getElementById('diagramArea');
+  const svg  = document.getElementById('arrows');
+  const wrap = document.getElementById('diagram');
 
+  // Clear and re-size the SVG to match the diagram container exactly
   svg.innerHTML = '';
-
-  const cr = container.getBoundingClientRect();
+  const cr = wrap.getBoundingClientRect();
   svg.setAttribute('width',   cr.width);
   svg.setAttribute('height',  cr.height);
   svg.setAttribute('viewBox', `0 0 ${cr.width} ${cr.height}`);
 
-  // Arrowhead marker — 8×6 px, tip at refX so it lands exactly on the path endpoint
+  // ── Arrowhead marker ────────────────────────────────────────────────
+  // 8×6 px triangle, tip at (8,3) which is placed at the path endpoint
+  // via refX=8 so the arrowhead touches — but does not cross — the target.
   const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
   defs.innerHTML = `
-    <marker id="ah" markerWidth="8" markerHeight="6"
+    <marker id="arr" viewBox="0 0 8 6" markerWidth="8" markerHeight="6"
             refX="8" refY="3" orient="auto" markerUnits="userSpaceOnUse">
       <polygon points="0 0, 8 3, 0 6" fill="#B0B0B0" opacity="0.75"/>
     </marker>`;
   svg.appendChild(defs);
 
-  // Return bounding info for a node, relative to the diagram container
-  function p(id) {
+  // Return box metrics relative to the diagram container origin
+  function box(id) {
     const el = document.getElementById(id);
     if (!el) return null;
     const r = el.getBoundingClientRect();
+    const x = r.left - cr.left;
+    const y = r.top  - cr.top;
     return {
-      cx:    r.left - cr.left + r.width  / 2,
-      cy:    r.top  - cr.top  + r.height / 2,
-      top:   r.top  - cr.top,
-      bot:   r.top  - cr.top  + r.height,
-      left:  r.left - cr.left,
-      right: r.left - cr.left + r.width,
-      w: r.width, h: r.height,
+      cx:    x + r.width  / 2,
+      cy:    y + r.height / 2,
+      top:   y,
+      bot:   y + r.height,
+      left:  x,
+      right: x + r.width,
     };
   }
 
-  // Append a <path> to the arrow SVG
-  function addPath(d, dashed) {
-    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    path.setAttribute('d', d);
-    path.setAttribute('stroke', '#B0B0B0');
-    path.setAttribute('stroke-width', '1.5');
-    path.setAttribute('stroke-opacity', '0.5');
-    path.setAttribute('fill', 'none');
-    if (dashed) path.setAttribute('stroke-dasharray', '5,3');
-    path.setAttribute('marker-end', 'url(#ah)');
-    svg.appendChild(path);
+  // Append a <path> element to the SVG
+  function path(d, dashed) {
+    const el = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    el.setAttribute('d', d);
+    el.setAttribute('stroke', '#B0B0B0');
+    el.setAttribute('stroke-width', '1.5');
+    el.setAttribute('stroke-opacity', '0.5');
+    el.setAttribute('fill', 'none');
+    el.setAttribute('marker-end', 'url(#arr)');
+    if (dashed) el.setAttribute('stroke-dasharray', '5 3');
+    svg.appendChild(el);
   }
 
-  // Vertical S-curve: bottom-centre of 'from' → top-centre of 'to'
+  // Vertical cubic-bezier S-curve: bottom-centre of A → top-centre of B
   function down(fromId, toId, dashed) {
-    const a = p(fromId), b = p(toId);
+    const a = box(fromId), b = box(toId);
     if (!a || !b) return;
     const mid = (a.bot + b.top) / 2;
-    addPath(`M ${a.cx},${a.bot} C ${a.cx},${mid} ${b.cx},${mid} ${b.cx},${b.top}`, dashed);
+    path(`M ${a.cx},${a.bot} C ${a.cx},${mid} ${b.cx},${mid} ${b.cx},${b.top}`, dashed);
   }
 
-  // Straight horizontal arrow: right edge of 'from' → left edge of 'to'
-  function horiz(fromId, toId) {
-    const a = p(fromId), b = p(toId);
+  // Short horizontal arrow: right edge of A → left edge of B (same flex row)
+  function right(fromId, toId) {
+    const a = box(fromId), b = box(toId);
     if (!a || !b) return;
-    addPath(`M ${a.right},${a.cy} L ${b.left},${b.cy}`);
+    path(`M ${a.right},${a.cy} L ${b.left},${b.cy}`);
   }
 
-  // Two offset horizontal arrows for bidirectional flow
+  // Two offset horizontal lines for bidirectional flow A ↔ B
   function bidir(aId, bId) {
-    const a = p(aId), b = p(bId);
+    const a = box(aId), b = box(bId);
     if (!a || !b) return;
     const off = 3.5;
-    // a → b  (rides above the mid-line)
-    addPath(`M ${a.right},${a.cy - off} L ${b.left},${b.cy - off}`);
-    // b → a  (rides below the mid-line; path drawn right→left so marker-end points at a)
-    addPath(`M ${b.left},${b.cy + off} L ${a.right},${a.cy + off}`);
+    // A → B  (above centreline)
+    path(`M ${a.right},${a.cy - off} L ${b.left},${b.cy - off}`);
+    // B → A  (below centreline; path goes right-to-left so marker lands at a.right)
+    path(`M ${b.left},${b.cy + off} L ${a.right},${a.cy + off}`);
   }
 
-  // ── Connections ────────────────────────────────────────────────────────
+  // ═══════════════════════════════════════════════════════════
+  //  Draw all specified connections
+  // ═══════════════════════════════════════════════════════════
 
-  // Layer 1 → Session Manager (all five inputs funnel in)
+  // Layer 1 → Session Manager (five-in, funnel-and-converge)
   ['node-satair-market', 'node-self-service-portal', 'node-email-intake',
    'node-ai-case-management', 'node-human-in-the-loop']
     .forEach(id => down(id, 'node-session-manager'));
 
-  // Session Manager ↔ ACE AI Orchestrator
+  // Session Manager ↔ ACE AI Orchestrator  (bidirectional)
   bidir('node-session-manager', 'node-ace-ai-orchestrator');
 
   // ACE AI Orchestrator → LLM Service
-  horiz('node-ace-ai-orchestrator', 'node-llm-service');
+  right('node-ace-ai-orchestrator', 'node-llm-service');
 
-  // ACE AI Orchestrator → tool belt (fan-out into bottom sub-row)
+  // ACE AI Orchestrator → tool belt (fan-out to bottom sub-row)
   ['node-session-state', 'node-ticket-tool', 'node-sap-lookup-tool',
    'node-knowledge-tool', 'node-case-history-tool', 'node-response-draft-tool']
     .forEach(id => down('node-ace-ai-orchestrator', id));
@@ -458,16 +531,17 @@ function drawArrows() {
   down('node-sap-adapters',            'node-sap-cc');
   down('node-knowledge-doc-adapters',  'node-symbio');
   down('node-llm-adapter',             'node-lilly');
-  down('node-legacy-automation',       'node-freshdesk', true); // dashed legacy path
+
+  // Legacy Automation → Freshdesk  (dashed, long diagonal)
+  down('node-legacy-automation', 'node-freshdesk', true);
 }
 
-// Redraw on resize (debounced)
-let resizeTimer;
-window.addEventListener('resize', () => {
-  clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(drawArrows, 60);
-});
-window.addEventListener('load', drawArrows);
+// Re-draw on resize (debounced)
+let _rt;
+window.addEventListener('resize', () => { clearTimeout(_rt); _rt = setTimeout(drawArrows, 60); });
+
+// Initial draw — use rAF to ensure layout paint has completed
+window.addEventListener('load', () => requestAnimationFrame(drawArrows));
 </script>
 </body>
 </html>
