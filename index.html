@@ -29,7 +29,7 @@
       border-right: 1px solid #E8E8E8;
       display: flex;
       flex-direction: column;
-      align-items: stretch;   /* children fill full width */
+      align-items: stretch;
       overflow: hidden;
     }
 
@@ -38,7 +38,7 @@
       flex-shrink: 0;
       display: flex;
       justify-content: center;
-      padding: 18px 0 0;
+      padding: 20px 0 0;
     }
 
     #runDemoBtn {
@@ -61,7 +61,7 @@
     /* Diagram fills remaining height */
     #diagram {
       flex: 1;
-      position: relative;           /* arrow SVG is absolute inside here */
+      position: relative;
       display: flex;
       flex-direction: column;
       justify-content: space-evenly;
@@ -105,7 +105,6 @@
       width: 100%;
     }
 
-    /* Gap between top and bottom sub-rows inside Layer 2 */
     .row + .row { margin-top: 18px; }
 
     /* ─── Box ─────────────────────────────────────────────────────── */
@@ -123,6 +122,7 @@
       align-items: center;
       justify-content: center;
       text-align: center;
+      transition: border-color 0.28s, box-shadow 0.28s, background 0.28s;
     }
 
     .box span.lbl {
@@ -130,6 +130,7 @@
       font-weight: 600;
       color: #333;
       line-height: 1.3;
+      transition: color 0.28s;
     }
 
     .box span.tag {
@@ -140,27 +141,28 @@
       letter-spacing: 0.07em;
       color: #C0C0C0;
       margin-top: 3px;
-      font-style: normal;
     }
 
     /* Left-border accents */
-    .teal   { border-left: 3px solid #00897B; }
-    .blue   { border-left: 3px solid #1E88E5; }
-    .amber  { border-left: 3px solid #F59E0B; }
+    .teal  { border-left: 3px solid #00897B; }
+    .blue  { border-left: 3px solid #1E88E5; }
+    .amber { border-left: 3px solid #F59E0B; }
 
     /* Sunset / deprecated style */
-    .sunset               { border: 1.5px dashed #CCCCCC !important; }
-    .sunset span.lbl      { color: #AAAAAA; font-style: italic; }
+    .sunset          { border: 1.5px dashed #CCCCCC !important; }
+    .sunset span.lbl { color: #AAAAAA; font-style: italic; }
 
-    /* Active highlight (used by demo runner in later steps) */
+    /* Active highlight (used by demo runner) */
     .box.active {
       border-color: #00897B !important;
       border-width: 2px !important;
-      box-shadow: 0 0 0 3px rgba(0,137,123,0.15), 0 2px 6px rgba(0,0,0,0.06);
+      background: #E8F5E9 !important;
+      box-shadow: 0 0 0 3px rgba(0,137,123,0.18), 0 2px 8px rgba(0,0,0,0.10);
     }
+    .box.active span.lbl { color: #00695C; }
 
     /* ════════════════════════════════════════════════════════════════
-       RIGHT PANEL — sky aesthetic only, no chat widget
+       RIGHT PANEL — dramatic sky aesthetic + floating chat widget
     ════════════════════════════════════════════════════════════════ */
     #right {
       width: 50%;
@@ -203,6 +205,183 @@
       position: absolute; inset: 0;
       width: 100%; height: 100%;
       pointer-events: none;
+    }
+
+    /* ════════════════════════════════════════════════════════════════
+       CHAT WIDGET — floating, bottom-right
+    ════════════════════════════════════════════════════════════════ */
+    #chat-widget {
+      position: absolute;
+      bottom: 24px;
+      right: 24px;
+      width: 360px;
+      max-height: 520px;
+      background: #FFFFFF;
+      border-radius: 16px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.28);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      z-index: 10;
+    }
+
+    /* Header */
+    #chat-header {
+      background: #00897B;
+      padding: 13px 16px;
+      border-radius: 16px 16px 0 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    #chat-header-title {
+      color: #fff;
+      font-size: 15px;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      letter-spacing: 0.01em;
+    }
+
+    /* Online status dot */
+    #chat-status {
+      width: 8px;
+      height: 8px;
+      background: #A5D6A7;
+      border-radius: 50%;
+      margin-left: auto;
+      flex-shrink: 0;
+      box-shadow: 0 0 0 2px rgba(165,214,167,0.35);
+    }
+
+    /* Messages area */
+    #chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-height: 0;
+      scroll-behavior: smooth;
+    }
+
+    #chat-messages::-webkit-scrollbar        { width: 4px; }
+    #chat-messages::-webkit-scrollbar-track  { background: transparent; }
+    #chat-messages::-webkit-scrollbar-thumb  { background: #E0E0E0; border-radius: 2px; }
+
+    /* Empty state */
+    #chat-empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 160px;
+      color: #BDBDBD;
+      font-size: 12px;
+      font-family: 'Inter', sans-serif;
+      text-align: center;
+      gap: 10px;
+      padding: 20px;
+      user-select: none;
+    }
+    #chat-empty strong { color: #9E9E9E; font-weight: 600; }
+
+    /* Chat bubbles */
+    .bubble {
+      max-width: 75%;
+      padding: 10px 14px;
+      font-size: 13px;
+      font-family: 'Inter', sans-serif;
+      line-height: 1.5;
+      word-break: break-word;
+      opacity: 0;
+      transform: translateY(6px);
+      animation: bubbleIn 0.22s ease forwards;
+    }
+
+    @keyframes bubbleIn {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .bubble-user {
+      align-self: flex-end;
+      background: #00897B;
+      color: #fff;
+      border-radius: 12px 12px 2px 12px;
+    }
+
+    .bubble-assistant {
+      align-self: flex-start;
+      background: #F1F3F4;
+      color: #333;
+      border-radius: 12px 12px 12px 2px;
+    }
+
+    /* Typing indicator */
+    .typing-indicator {
+      align-self: flex-start;
+      background: #F1F3F4;
+      border-radius: 12px 12px 12px 2px;
+      padding: 12px 16px;
+      display: flex;
+      gap: 5px;
+      align-items: center;
+    }
+
+    .typing-dot {
+      width: 7px;
+      height: 7px;
+      background: #AAAAAA;
+      border-radius: 50%;
+      animation: typingBounce 1.1s infinite ease-in-out;
+    }
+    .typing-dot:nth-child(2) { animation-delay: 0.18s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.36s; }
+
+    @keyframes typingBounce {
+      0%, 60%, 100% { transform: translateY(0);    opacity: 0.5; }
+      30%            { transform: translateY(-5px); opacity: 1;   }
+    }
+
+    /* Footer / decorative input bar */
+    #chat-footer {
+      flex-shrink: 0;
+      padding: 10px 12px;
+      border-top: 1px solid #EBEBEB;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    #chat-input {
+      flex: 1;
+      height: 36px;
+      border: 1.5px solid #E0E0E0;
+      border-radius: 8px;
+      padding: 0 12px;
+      font-size: 13px;
+      font-family: 'Inter', sans-serif;
+      color: #BDBDBD;
+      background: #FAFAFA;
+      cursor: not-allowed;
+      outline: none;
+    }
+
+    #chat-send {
+      height: 36px;
+      padding: 0 16px;
+      background: #00897B;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      cursor: not-allowed;
+      opacity: 0.7;
+      letter-spacing: 0.01em;
     }
   </style>
 </head>
@@ -252,7 +431,6 @@
            ╚══════════════════════════════════════╝ -->
       <div class="layer">
         <div class="layer-label">AI Orchestration</div>
-        <!-- top sub-row: orchestration core -->
         <div class="row">
           <div class="box amber" id="node-session-manager">
             <span class="lbl">Session Manager</span>
@@ -264,7 +442,6 @@
             <span class="lbl">LLM Service</span>
           </div>
         </div>
-        <!-- bottom sub-row: tool belt -->
         <div class="row">
           <div class="box amber" id="node-session-state">
             <span class="lbl">Session State</span>
@@ -345,7 +522,7 @@
   </div><!-- /#left -->
 
   <!-- ══════════════════════════════════════════════════════════
-       RIGHT PANEL — dramatic sky aesthetic, no chat
+       RIGHT PANEL — dramatic sky aesthetic + chat widget
   ══════════════════════════════════════════════════════════════ -->
   <div id="right">
     <div id="sky-grad"></div>
@@ -410,29 +587,81 @@
       <circle cx="38"  cy="194" r="0.8" fill="rgba(255,255,255,0.37)"/>
       <circle cx="348" cy="158" r="0.7" fill="rgba(255,255,255,0.40)"/>
     </svg>
+
+    <!-- ── Chat Widget ───────────────────────────────────────────── -->
+    <div id="chat-widget">
+
+      <div id="chat-header">
+        <!-- Bot icon: robot head + speech bubble indicator -->
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none"
+             xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <!-- Antenna -->
+          <line x1="14" y1="4.2" x2="14" y2="2"
+                stroke="rgba(255,255,255,0.88)" stroke-width="1.4" stroke-linecap="round"/>
+          <circle cx="14" cy="1.2" r="1.2" fill="rgba(255,255,255,0.88)"/>
+          <!-- Head -->
+          <rect x="7" y="4.8" width="14" height="11" rx="3.5"
+                fill="rgba(255,255,255,0.92)"/>
+          <!-- Eyes -->
+          <circle cx="11" cy="10.3" r="1.4" fill="#00897B"/>
+          <circle cx="17" cy="10.3" r="1.4" fill="#00897B"/>
+          <!-- Smile -->
+          <path d="M 11 13 Q 14 14.8 17 13"
+                stroke="#00897B" stroke-width="1" fill="none" stroke-linecap="round"/>
+          <!-- Body / speech bubble -->
+          <rect x="6" y="18" width="16" height="8" rx="3"
+                fill="rgba(255,255,255,0.72)"/>
+          <path d="M 10.5 26 L 8.5 28.5 L 14 26 Z"
+                fill="rgba(255,255,255,0.72)"/>
+          <!-- Dots in body -->
+          <circle cx="10" cy="22" r="1.1" fill="#00897B" opacity="0.55"/>
+          <circle cx="14" cy="22" r="1.1" fill="#00897B" opacity="0.55"/>
+          <circle cx="18" cy="22" r="1.1" fill="#00897B" opacity="0.55"/>
+        </svg>
+        <span id="chat-header-title">Customer Assistant</span>
+        <div id="chat-status" title="Online"></div>
+      </div>
+
+      <div id="chat-messages">
+        <div id="chat-empty">
+          <svg width="34" height="34" viewBox="0 0 34 34" fill="none"
+               xmlns="http://www.w3.org/2000/svg" opacity="0.45">
+            <path d="M4 7a4 4 0 014-4h18a4 4 0 014 4v13a4 4 0 01-4 4H11l-7 4.5V7z"
+                  stroke="#BDBDBD" stroke-width="1.6" fill="none" stroke-linejoin="round"/>
+            <circle cx="11" cy="13.5" r="1.5" fill="#BDBDBD"/>
+            <circle cx="17" cy="13.5" r="1.5" fill="#BDBDBD"/>
+            <circle cx="23" cy="13.5" r="1.5" fill="#BDBDBD"/>
+          </svg>
+          <span>Click <strong>&#9654; Run Demo</strong> to start</span>
+        </div>
+      </div>
+
+      <div id="chat-footer">
+        <input id="chat-input" type="text" placeholder="Type a message…" disabled>
+        <button id="chat-send" disabled>Send</button>
+      </div>
+
+    </div><!-- /#chat-widget -->
+
   </div><!-- /#right -->
 
 </div><!-- /#app -->
 
 <script>
-// ── Arrow drawing ─────────────────────────────────────────────────────────
-// All coordinates are computed live from getBoundingClientRect so they
-// are always accurate regardless of viewport size.
+// ══════════════════════════════════════════════════════════════════
+//  ARROW DRAWING
+// ══════════════════════════════════════════════════════════════════
 
 function drawArrows() {
   const svg  = document.getElementById('arrows');
   const wrap = document.getElementById('diagram');
 
-  // Clear and re-size the SVG to match the diagram container exactly
   svg.innerHTML = '';
   const cr = wrap.getBoundingClientRect();
   svg.setAttribute('width',   cr.width);
   svg.setAttribute('height',  cr.height);
   svg.setAttribute('viewBox', `0 0 ${cr.width} ${cr.height}`);
 
-  // ── Arrowhead marker ────────────────────────────────────────────────
-  // 8×6 px triangle, tip at (8,3) which is placed at the path endpoint
-  // via refX=8 so the arrowhead touches — but does not cross — the target.
   const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
   defs.innerHTML = `
     <marker id="arr" viewBox="0 0 8 6" markerWidth="8" markerHeight="6"
@@ -441,7 +670,6 @@ function drawArrows() {
     </marker>`;
   svg.appendChild(defs);
 
-  // Return box metrics relative to the diagram container origin
   function box(id) {
     const el = document.getElementById(id);
     if (!el) return null;
@@ -458,7 +686,6 @@ function drawArrows() {
     };
   }
 
-  // Append a <path> element to the SVG
   function path(d, dashed) {
     const el = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     el.setAttribute('d', d);
@@ -471,7 +698,6 @@ function drawArrows() {
     svg.appendChild(el);
   }
 
-  // Vertical cubic-bezier S-curve: bottom-centre of A → top-centre of B
   function down(fromId, toId, dashed) {
     const a = box(fromId), b = box(toId);
     if (!a || !b) return;
@@ -479,40 +705,32 @@ function drawArrows() {
     path(`M ${a.cx},${a.bot} C ${a.cx},${mid} ${b.cx},${mid} ${b.cx},${b.top}`, dashed);
   }
 
-  // Short horizontal arrow: right edge of A → left edge of B (same flex row)
   function right(fromId, toId) {
     const a = box(fromId), b = box(toId);
     if (!a || !b) return;
     path(`M ${a.right},${a.cy} L ${b.left},${b.cy}`);
   }
 
-  // Two offset horizontal lines for bidirectional flow A ↔ B
   function bidir(aId, bId) {
     const a = box(aId), b = box(bId);
     if (!a || !b) return;
     const off = 3.5;
-    // A → B  (above centreline)
     path(`M ${a.right},${a.cy - off} L ${b.left},${b.cy - off}`);
-    // B → A  (below centreline; path goes right-to-left so marker lands at a.right)
     path(`M ${b.left},${b.cy + off} L ${a.right},${a.cy + off}`);
   }
 
-  // ═══════════════════════════════════════════════════════════
-  //  Draw all specified connections
-  // ═══════════════════════════════════════════════════════════
-
-  // Layer 1 → Session Manager (five-in, funnel-and-converge)
+  // Layer 1 → Session Manager (five-in funnel)
   ['node-satair-market', 'node-self-service-portal', 'node-email-intake',
    'node-ai-case-management', 'node-human-in-the-loop']
     .forEach(id => down(id, 'node-session-manager'));
 
-  // Session Manager ↔ ACE AI Orchestrator  (bidirectional)
+  // Session Manager ↔ ACE AI Orchestrator
   bidir('node-session-manager', 'node-ace-ai-orchestrator');
 
   // ACE AI Orchestrator → LLM Service
   right('node-ace-ai-orchestrator', 'node-llm-service');
 
-  // ACE AI Orchestrator → tool belt (fan-out to bottom sub-row)
+  // ACE AI Orchestrator → tool belt (fan-out)
   ['node-session-state', 'node-ticket-tool', 'node-sap-lookup-tool',
    'node-knowledge-tool', 'node-case-history-tool', 'node-response-draft-tool']
     .forEach(id => down('node-ace-ai-orchestrator', id));
@@ -521,7 +739,7 @@ function drawArrows() {
   down('node-ticket-tool',         'node-case-management-adapter');
   down('node-sap-lookup-tool',     'node-sap-adapters');
   down('node-knowledge-tool',      'node-knowledge-doc-adapters');
-  down('node-case-history-tool',   'node-case-management-adapter'); // shared target
+  down('node-case-history-tool',   'node-case-management-adapter');
   down('node-response-draft-tool', 'node-llm-adapter');
 
   // Adapters → Core Systems
@@ -531,17 +749,149 @@ function drawArrows() {
   down('node-sap-adapters',            'node-sap-cc');
   down('node-knowledge-doc-adapters',  'node-symbio');
   down('node-llm-adapter',             'node-lilly');
-
-  // Legacy Automation → Freshdesk  (dashed, long diagonal)
-  down('node-legacy-automation', 'node-freshdesk', true);
+  down('node-legacy-automation',       'node-freshdesk', true);
 }
 
-// Re-draw on resize (debounced)
 let _rt;
 window.addEventListener('resize', () => { clearTimeout(_rt); _rt = setTimeout(drawArrows, 60); });
-
-// Initial draw — use rAF to ensure layout paint has completed
 window.addEventListener('load', () => requestAnimationFrame(drawArrows));
+
+
+// ══════════════════════════════════════════════════════════════════
+//  DEMO RUNNER
+// ══════════════════════════════════════════════════════════════════
+
+const DEMO_SCRIPT = [
+  {
+    type: 'user',
+    text: 'Hi, I need help tracking a missing aircraft part.',
+    nodes: ['node-satair-market'],
+    pauseAfter: 650
+  },
+  {
+    type: 'assistant',
+    text: "Of course! I'm here to help. Could you share the part number or your order reference?",
+    nodes: ['node-session-manager', 'node-ace-ai-orchestrator', 'node-llm-service'],
+    typingMs: 800,
+    pauseAfter: 550
+  },
+  {
+    type: 'user',
+    text: 'Part number 68A003056-001. We ordered it via Satair Market last week.',
+    nodes: ['node-satair-market', 'node-ai-case-management', 'node-session-state'],
+    pauseAfter: 700
+  },
+  {
+    type: 'assistant',
+    text: 'Got it — looking that up in SAP right now\u2026',
+    nodes: ['node-sap-lookup-tool', 'node-sap-adapters', 'node-sap-rpr'],
+    typingMs: 800,
+    pauseAfter: 450
+  },
+  {
+    type: 'assistant',
+    text: 'Found it! Part 68A003056-001 was shipped Feb\u00a024th. Ticket #FD-84521 created \u2014 expected arrival tomorrow.',
+    nodes: ['node-ticket-tool', 'node-case-management-adapter', 'node-freshdesk'],
+    typingMs: 800,
+    pauseAfter: 750
+  },
+  {
+    type: 'user',
+    text: 'Perfect. Can you also confirm the invoice is in SAP-AP1?',
+    nodes: ['node-self-service-portal', 'node-ace-ai-orchestrator'],
+    pauseAfter: 650
+  },
+  {
+    type: 'assistant',
+    text: 'Querying SAP-AP1 now\u2026',
+    nodes: ['node-sap-adapters', 'node-sap-ap1'],
+    typingMs: 800,
+    pauseAfter: 400
+  },
+  {
+    type: 'assistant',
+    text: "Invoice INV-2024-9832 confirmed in SAP-AP1, dated Feb\u00a022nd. I've linked it to ticket #FD-84521. Email copy dispatched!",
+    nodes: ['node-response-draft-tool', 'node-knowledge-doc-adapters', 'node-human-in-the-loop'],
+    typingMs: 800,
+    pauseAfter: 0
+  }
+];
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function setHighlight(nodeIds) {
+  document.querySelectorAll('.box.active').forEach(el => el.classList.remove('active'));
+  nodeIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.add('active');
+  });
+}
+
+function addBubble(type, text) {
+  const msgs = document.getElementById('chat-messages');
+  const empty = document.getElementById('chat-empty');
+  if (empty) empty.remove();
+  const div = document.createElement('div');
+  div.className = 'bubble bubble-' + type;
+  div.textContent = text;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function showTyping() {
+  const msgs = document.getElementById('chat-messages');
+  const ind = document.createElement('div');
+  ind.className = 'typing-indicator';
+  ind.id = 'typing-ind';
+  ind.innerHTML =
+    '<div class="typing-dot"></div>' +
+    '<div class="typing-dot"></div>' +
+    '<div class="typing-dot"></div>';
+  msgs.appendChild(ind);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function removeTyping() {
+  const el = document.getElementById('typing-ind');
+  if (el) el.remove();
+}
+
+async function runDemo() {
+  const btn = document.getElementById('runDemoBtn');
+  btn.disabled = true;
+  btn.textContent = '\u23F3 Running\u2026';
+
+  // Reset state
+  const msgs = document.getElementById('chat-messages');
+  msgs.innerHTML = '';
+  document.querySelectorAll('.box.active').forEach(el => el.classList.remove('active'));
+
+  await sleep(300);
+
+  for (const step of DEMO_SCRIPT) {
+    if (step.type === 'user') {
+      setHighlight(step.nodes);
+      addBubble('user', step.text);
+      await sleep(step.pauseAfter || 600);
+    } else {
+      showTyping();
+      await sleep(step.typingMs || 800);
+      removeTyping();
+      setHighlight(step.nodes);
+      addBubble('assistant', step.text);
+      await sleep(step.pauseAfter || 500);
+    }
+  }
+
+  // Fade out highlights after completion
+  await sleep(1600);
+  document.querySelectorAll('.box.active').forEach(el => el.classList.remove('active'));
+
+  btn.disabled = false;
+  btn.innerHTML = '&#9654; Replay Demo';
+}
+
+document.getElementById('runDemoBtn').addEventListener('click', runDemo);
 </script>
 </body>
 </html>
