@@ -152,11 +152,14 @@
     .sunset               { border: 1.5px dashed #CCCCCC !important; }
     .sunset span.lbl      { color: #AAAAAA; font-style: italic; }
 
-    /* Active highlight (used by demo runner in later steps) */
+    /* Active highlight (used by demo runner) */
+    .box {
+      transition: box-shadow 0.4s ease, border-color 0.4s ease;
+    }
     .box.active {
+      box-shadow: 0 0 0 3px #00897B, 0 0 20px rgba(0,137,123,0.4);
       border-color: #00897B !important;
-      border-width: 2px !important;
-      box-shadow: 0 0 0 3px rgba(0,137,123,0.15), 0 2px 6px rgba(0,0,0,0.06);
+      transition: all 0.3s ease;
     }
 
     /* ════════════════════════════════════════════════════════════════
@@ -203,6 +206,159 @@
       position: absolute; inset: 0;
       width: 100%; height: 100%;
       pointer-events: none;
+    }
+
+    /* ════════════════════════════════════════════════════════════════
+       CHAT WIDGET — overlaid on the sky panel
+    ════════════════════════════════════════════════════════════════ */
+    #chat-container {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 370px;
+      max-height: 70vh;
+      display: flex;
+      flex-direction: column;
+      z-index: 10;
+      pointer-events: auto;
+    }
+
+    #chat-header {
+      background: rgba(0,137,123,0.92);
+      color: #fff;
+      padding: 14px 18px;
+      border-radius: 14px 14px 0 0;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      backdrop-filter: blur(8px);
+    }
+
+    #chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      background: rgba(255,255,255,0.95);
+      padding: 16px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-height: 260px;
+      max-height: 52vh;
+      backdrop-filter: blur(8px);
+    }
+
+    #chat-footer {
+      background: rgba(245,245,245,0.95);
+      border-radius: 0 0 14px 14px;
+      padding: 12px 14px;
+      font-size: 12px;
+      color: #999;
+      text-align: center;
+      backdrop-filter: blur(8px);
+    }
+
+    .chat-msg {
+      max-width: 85%;
+      padding: 10px 14px;
+      border-radius: 14px;
+      font-size: 13px;
+      line-height: 1.5;
+      opacity: 0;
+      animation: chatFadeIn 0.35s ease forwards;
+    }
+
+    @keyframes chatFadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .chat-msg.assistant {
+      background: #E0F2F1;
+      color: #1a1a1a;
+      align-self: flex-start;
+      border-bottom-left-radius: 4px;
+    }
+
+    .chat-msg.customer {
+      background: #00897B;
+      color: #fff;
+      align-self: flex-end;
+      border-bottom-right-radius: 4px;
+    }
+
+    /* Typing indicator */
+    .typing-indicator {
+      align-self: flex-start;
+      display: flex;
+      gap: 4px;
+      padding: 10px 16px;
+      background: #E0F2F1;
+      border-radius: 14px;
+      border-bottom-left-radius: 4px;
+      opacity: 0;
+      animation: chatFadeIn 0.25s ease forwards;
+    }
+    .typing-indicator span {
+      width: 7px; height: 7px;
+      background: #80CBC4;
+      border-radius: 50%;
+      animation: typingBounce 1.2s infinite;
+    }
+    .typing-indicator span:nth-child(2) { animation-delay: 0.15s; }
+    .typing-indicator span:nth-child(3) { animation-delay: 0.3s; }
+    @keyframes typingBounce {
+      0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+      30%           { transform: translateY(-5px); opacity: 1; }
+    }
+
+    /* Freshdesk badge */
+    #freshdesk-badge {
+      display: none;
+      margin-top: 8px;
+      text-align: center;
+      opacity: 0;
+    }
+    #freshdesk-badge.visible {
+      display: block;
+      animation: chatFadeIn 0.4s ease forwards;
+    }
+    #freshdesk-badge span {
+      display: inline-block;
+      background: rgba(0,137,123,0.12);
+      color: #00897B;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 16px;
+      border-radius: 20px;
+      border: 1px solid rgba(0,137,123,0.25);
+    }
+
+    /* ─── Next / Restart button ────────────────────────────────── */
+    #nextBtn {
+      display: none;
+      position: absolute;
+      bottom: 28px;
+      right: 28px;
+      background: #00897B;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 22px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      z-index: 20;
+      letter-spacing: 0.01em;
+      transition: background 0.18s, box-shadow 0.18s;
+    }
+    #nextBtn:hover:not(:disabled) {
+      background: #00796B;
+      box-shadow: 0 4px 16px rgba(0,137,123,0.4);
+    }
+    #nextBtn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
     }
   </style>
 </head>
@@ -410,29 +566,36 @@
       <circle cx="38"  cy="194" r="0.8" fill="rgba(255,255,255,0.37)"/>
       <circle cx="348" cy="158" r="0.7" fill="rgba(255,255,255,0.40)"/>
     </svg>
+
+    <!-- Chat widget -->
+    <div id="chat-container" style="display:none;">
+      <div id="chat-header">Satair Customer Assistant</div>
+      <div id="chat-messages"></div>
+      <div id="chat-footer">Powered by ACE AI</div>
+      <div id="freshdesk-badge"><span></span></div>
+    </div>
+
+    <!-- Next / Restart button -->
+    <button id="nextBtn">Next &#9654;</button>
   </div><!-- /#right -->
 
 </div><!-- /#app -->
 
 <script>
-// ── Arrow drawing ─────────────────────────────────────────────────────────
-// All coordinates are computed live from getBoundingClientRect so they
-// are always accurate regardless of viewport size.
+// ══════════════════════════════════════════════════════════════════════════
+//  ARROW DRAWING
+// ══════════════════════════════════════════════════════════════════════════
 
 function drawArrows() {
   const svg  = document.getElementById('arrows');
   const wrap = document.getElementById('diagram');
 
-  // Clear and re-size the SVG to match the diagram container exactly
   svg.innerHTML = '';
   const cr = wrap.getBoundingClientRect();
   svg.setAttribute('width',   cr.width);
   svg.setAttribute('height',  cr.height);
   svg.setAttribute('viewBox', `0 0 ${cr.width} ${cr.height}`);
 
-  // ── Arrowhead marker ────────────────────────────────────────────────
-  // 8×6 px triangle, tip at (8,3) which is placed at the path endpoint
-  // via refX=8 so the arrowhead touches — but does not cross — the target.
   const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
   defs.innerHTML = `
     <marker id="arr" viewBox="0 0 8 6" markerWidth="8" markerHeight="6"
@@ -441,24 +604,16 @@ function drawArrows() {
     </marker>`;
   svg.appendChild(defs);
 
-  // Return box metrics relative to the diagram container origin
   function box(id) {
     const el = document.getElementById(id);
     if (!el) return null;
     const r = el.getBoundingClientRect();
     const x = r.left - cr.left;
     const y = r.top  - cr.top;
-    return {
-      cx:    x + r.width  / 2,
-      cy:    y + r.height / 2,
-      top:   y,
-      bot:   y + r.height,
-      left:  x,
-      right: x + r.width,
-    };
+    return { cx: x + r.width/2, cy: y + r.height/2,
+             top: y, bot: y + r.height, left: x, right: x + r.width };
   }
 
-  // Append a <path> element to the SVG
   function path(d, dashed) {
     const el = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     el.setAttribute('d', d);
@@ -471,7 +626,6 @@ function drawArrows() {
     svg.appendChild(el);
   }
 
-  // Vertical cubic-bezier S-curve: bottom-centre of A → top-centre of B
   function down(fromId, toId, dashed) {
     const a = box(fromId), b = box(toId);
     if (!a || !b) return;
@@ -479,69 +633,286 @@ function drawArrows() {
     path(`M ${a.cx},${a.bot} C ${a.cx},${mid} ${b.cx},${mid} ${b.cx},${b.top}`, dashed);
   }
 
-  // Short horizontal arrow: right edge of A → left edge of B (same flex row)
   function right(fromId, toId) {
     const a = box(fromId), b = box(toId);
     if (!a || !b) return;
     path(`M ${a.right},${a.cy} L ${b.left},${b.cy}`);
   }
 
-  // Two offset horizontal lines for bidirectional flow A ↔ B
   function bidir(aId, bId) {
     const a = box(aId), b = box(bId);
     if (!a || !b) return;
     const off = 3.5;
-    // A → B  (above centreline)
     path(`M ${a.right},${a.cy - off} L ${b.left},${b.cy - off}`);
-    // B → A  (below centreline; path goes right-to-left so marker lands at a.right)
     path(`M ${b.left},${b.cy + off} L ${a.right},${a.cy + off}`);
   }
 
-  // ═══════════════════════════════════════════════════════════
-  //  Draw all specified connections
-  // ═══════════════════════════════════════════════════════════
-
-  // Layer 1 → Session Manager (five-in, funnel-and-converge)
+  // Layer 1 → Session Manager
   ['node-satair-market', 'node-self-service-portal', 'node-email-intake',
    'node-ai-case-management', 'node-human-in-the-loop']
     .forEach(id => down(id, 'node-session-manager'));
 
-  // Session Manager ↔ ACE AI Orchestrator  (bidirectional)
   bidir('node-session-manager', 'node-ace-ai-orchestrator');
-
-  // ACE AI Orchestrator → LLM Service
   right('node-ace-ai-orchestrator', 'node-llm-service');
 
-  // ACE AI Orchestrator → tool belt (fan-out to bottom sub-row)
   ['node-session-state', 'node-ticket-tool', 'node-sap-lookup-tool',
    'node-knowledge-tool', 'node-case-history-tool', 'node-response-draft-tool']
     .forEach(id => down('node-ace-ai-orchestrator', id));
 
-  // Tools → Integration Layer
   down('node-ticket-tool',         'node-case-management-adapter');
   down('node-sap-lookup-tool',     'node-sap-adapters');
   down('node-knowledge-tool',      'node-knowledge-doc-adapters');
-  down('node-case-history-tool',   'node-case-management-adapter'); // shared target
+  down('node-case-history-tool',   'node-case-management-adapter');
   down('node-response-draft-tool', 'node-llm-adapter');
 
-  // Adapters → Core Systems
   down('node-case-management-adapter', 'node-freshdesk');
   down('node-sap-adapters',            'node-sap-rpr');
   down('node-sap-adapters',            'node-sap-ap1');
   down('node-sap-adapters',            'node-sap-cc');
   down('node-knowledge-doc-adapters',  'node-symbio');
   down('node-llm-adapter',             'node-lilly');
-
-  // Legacy Automation → Freshdesk  (dashed, long diagonal)
   down('node-legacy-automation', 'node-freshdesk', true);
 }
 
-// Re-draw on resize (debounced)
 let _rt;
 window.addEventListener('resize', () => { clearTimeout(_rt); _rt = setTimeout(drawArrows, 60); });
-
-// Initial draw — use rAF to ensure layout paint has completed
 window.addEventListener('load', () => requestAnimationFrame(drawArrows));
+
+
+// ══════════════════════════════════════════════════════════════════════════
+//  DEMO LOGIC
+// ══════════════════════════════════════════════════════════════════════════
+
+(function() {
+  const runBtn    = document.getElementById('runDemoBtn');
+  const nextBtn   = document.getElementById('nextBtn');
+  const chatBox   = document.getElementById('chat-container');
+  const msgArea   = document.getElementById('chat-messages');
+  const badge     = document.getElementById('freshdesk-badge');
+
+  let demoActive  = false;
+  let currentStep = -1;
+  let animating   = false;   // true while a step sequence is playing
+
+  // ─── Utility: promise-based delay ──────────────────────────────────────
+  function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+  // ─── Highlight helpers ─────────────────────────────────────────────────
+  function highlightNodes(ids) {
+    ids.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.add('active');
+    });
+  }
+
+  function clearAllHighlights() {
+    document.querySelectorAll('.box.active').forEach(el => el.classList.remove('active'));
+  }
+
+  // ─── Chat message helpers ──────────────────────────────────────────────
+  function addMessage(text, role) {
+    const div = document.createElement('div');
+    div.className = 'chat-msg ' + role;
+    div.textContent = text;
+    msgArea.appendChild(div);
+    msgArea.scrollTop = msgArea.scrollHeight;
+    return div;
+  }
+
+  function showTyping() {
+    const div = document.createElement('div');
+    div.className = 'typing-indicator';
+    div.innerHTML = '<span></span><span></span><span></span>';
+    div.id = 'typing';
+    msgArea.appendChild(div);
+    msgArea.scrollTop = msgArea.scrollHeight;
+    return div;
+  }
+
+  function removeTyping() {
+    const el = document.getElementById('typing');
+    if (el) el.remove();
+  }
+
+  // ─── Architecture animation: standard customer message cycle ───────────
+  // Highlights Session Manager → ACE + LLM → Ticket Tool → fade → typing → response
+  async function runArchCycle(responseText) {
+    await wait(300);
+    highlightNodes(['node-session-manager']);
+
+    await wait(900);
+    highlightNodes(['node-ace-ai-orchestrator', 'node-llm-service']);
+
+    await wait(900);
+    highlightNodes(['node-ticket-tool']);
+
+    await wait(700);
+    clearAllHighlights();
+    showTyping();
+
+    await wait(800);
+    removeTyping();
+    addMessage(responseText, 'assistant');
+  }
+
+  // ─── Final step: additional Freshdesk flow after assistant response ────
+  async function runFinalSequence() {
+    await wait(500);
+    highlightNodes(['node-case-management-adapter']);
+
+    await wait(900);
+    highlightNodes(['node-freshdesk']);
+
+    await wait(600);
+    clearAllHighlights();
+
+    // Show final assistant message
+    addMessage(
+      '\u2713 Your ticket has been created. A service agent will follow up with you shortly. Is there anything else I can help you with?',
+      'assistant'
+    );
+
+    // Show badge
+    badge.querySelector('span').textContent = '\u2713 Ticket created in Freshdesk';
+    badge.classList.add('visible');
+  }
+
+  // ─── Step definitions ──────────────────────────────────────────────────
+  const STEPS = [
+    // Step 0: greeting (triggered by Run Demo — no Next click needed)
+    {
+      action: async function() {
+        addMessage(
+          "Hello! I'm your Satair Customer Assistant. How can I help you today?",
+          'assistant'
+        );
+      }
+    },
+    // Step 1
+    {
+      action: async function() {
+        clearAllHighlights();
+        await wait(300);
+        addMessage(
+          "Hi, I'd like to check the delivery status for order 457892.",
+          'customer'
+        );
+        await wait(350);
+        await runArchCycle(
+          "Of course! To look that up, could you please confirm your Customer ID?"
+        );
+      }
+    },
+    // Step 2
+    {
+      action: async function() {
+        clearAllHighlights();
+        await wait(300);
+        addMessage("Yes, it's CUST-99121.", 'customer');
+        await wait(350);
+        await runArchCycle(
+          "Thank you. And which part number does this relate to?"
+        );
+      }
+    },
+    // Step 3 (final)
+    {
+      action: async function() {
+        clearAllHighlights();
+        await wait(300);
+        addMessage("It's part number A320-91723.", 'customer');
+        await wait(350);
+        await runArchCycle(
+          "Perfect \u2014 I now have everything I need. Let me create a support ticket for you now."
+        );
+        await runFinalSequence();
+      }
+    }
+  ];
+
+  const LAST_STEP = STEPS.length - 1;
+
+  // ─── Next button click ─────────────────────────────────────────────────
+  nextBtn.addEventListener('click', async function() {
+    if (animating) return;
+
+    // If at restart state, reset the demo
+    if (currentStep > LAST_STEP - 1 && nextBtn.textContent === 'Restart') {
+      resetDemo();
+      return;
+    }
+
+    currentStep++;
+    if (currentStep > LAST_STEP) return;
+
+    animating = true;
+    nextBtn.disabled = true;
+
+    // Fade out previous highlights
+    clearAllHighlights();
+
+    await STEPS[currentStep].action();
+
+    animating = false;
+    nextBtn.disabled = false;
+
+    // After final step, change to Restart
+    if (currentStep >= LAST_STEP) {
+      nextBtn.textContent = 'Restart';
+    }
+  });
+
+  // ─── Run Demo button ──────────────────────────────────────────────────
+  runBtn.addEventListener('click', function() {
+    if (demoActive) {
+      resetDemo();
+      return;
+    }
+    startDemo();
+  });
+
+  async function startDemo() {
+    demoActive   = true;
+    currentStep  = 0;
+    animating    = true;
+
+    // Show chat container
+    chatBox.style.display = 'flex';
+    msgArea.innerHTML = '';
+    badge.classList.remove('visible');
+    badge.style.display = '';
+    clearAllHighlights();
+
+    // Run Step 0 (greeting)
+    await STEPS[0].action();
+
+    animating = false;
+
+    // Show Next button
+    nextBtn.textContent = 'Next \u25B6';
+    nextBtn.style.display = 'block';
+    nextBtn.disabled = false;
+  }
+
+  function resetDemo() {
+    demoActive  = false;
+    currentStep = -1;
+    animating   = false;
+
+    // Clear everything instantly
+    msgArea.innerHTML = '';
+    clearAllHighlights();
+    badge.classList.remove('visible');
+    badge.style.display = '';
+    nextBtn.style.display = 'none';
+    nextBtn.disabled = false;
+
+    // Wait 400ms then restart
+    setTimeout(function() {
+      startDemo();
+    }, 400);
+  }
+})();
 </script>
 </body>
 </html>
