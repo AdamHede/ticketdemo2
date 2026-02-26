@@ -735,9 +735,13 @@ window.addEventListener('load', () => requestAnimationFrame(drawArrows));
   }
 
   // ─── Architecture animation: standard customer message cycle ───────────
-  // Highlights Session Manager → ACE + LLM → Ticket Tool → fade → typing → response
+  // Satair Market → Session Manager → ACE + LLM → Ticket Tool → typing → response
+  // Highlights accumulate and persist until the next "Next" click clears them.
   async function runArchCycle(responseText) {
     await wait(300);
+    highlightNodes(['node-satair-market']);
+
+    await wait(600);
     highlightNodes(['node-session-manager']);
 
     await wait(900);
@@ -747,7 +751,6 @@ window.addEventListener('load', () => requestAnimationFrame(drawArrows));
     highlightNodes(['node-ticket-tool']);
 
     await wait(700);
-    clearAllHighlights();
     showTyping();
 
     await wait(800);
@@ -764,7 +767,6 @@ window.addEventListener('load', () => requestAnimationFrame(drawArrows));
     highlightNodes(['node-freshdesk']);
 
     await wait(600);
-    clearAllHighlights();
 
     // Show final assistant message
     addMessage(
@@ -791,7 +793,6 @@ window.addEventListener('load', () => requestAnimationFrame(drawArrows));
     // Step 1
     {
       action: async function() {
-        clearAllHighlights();
         await wait(300);
         addMessage(
           "Hi, I'd like to check the delivery status for order 457892.",
@@ -806,7 +807,6 @@ window.addEventListener('load', () => requestAnimationFrame(drawArrows));
     // Step 2
     {
       action: async function() {
-        clearAllHighlights();
         await wait(300);
         addMessage("Yes, it's CUST-99121.", 'customer');
         await wait(350);
@@ -818,7 +818,6 @@ window.addEventListener('load', () => requestAnimationFrame(drawArrows));
     // Step 3 (final)
     {
       action: async function() {
-        clearAllHighlights();
         await wait(300);
         addMessage("It's part number A320-91723.", 'customer');
         await wait(350);
