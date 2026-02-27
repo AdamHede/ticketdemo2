@@ -658,20 +658,24 @@ window.addEventListener('load', () => requestAnimationFrame(drawArrows));
   }
 
   // ─── Architecture animation: standard customer message cycle ───────────
-  // Satair Market → Session Manager → ACE + LLM → Ticket Tool → typing → response
+  // Satair Market → ACE AI Orchestrator → LLM Service + Session Manager
+  //   → Case Management Adapter → Freshdesk → typing → response
   // Highlights accumulate and persist until the next "Next" click clears them.
   async function runArchCycle(responseText) {
     await wait(300);
     highlightNodes(['node-satair-market']);
 
     await wait(600);
-    highlightNodes(['node-session-manager']);
+    highlightNodes(['node-ace-ai-orchestrator']);
 
-    await wait(900);
-    highlightNodes(['node-ace-ai-orchestrator', 'node-llm-service']);
+    await wait(600);
+    highlightNodes(['node-llm-service', 'node-session-manager']);
 
-    await wait(900);
-    highlightNodes(['node-ticket-tool']);
+    await wait(600);
+    highlightNodes(['node-case-management-adapter']);
+
+    await wait(600);
+    highlightNodes(['node-freshdesk']);
 
     await wait(700);
     showTyping();
@@ -681,14 +685,8 @@ window.addEventListener('load', () => requestAnimationFrame(drawArrows));
     addMessage(responseText, 'assistant');
   }
 
-  // ─── Final step: additional Freshdesk flow after assistant response ────
+  // ─── Final step: show confirmation message, badge, and Human in the Loop ──
   async function runFinalSequence() {
-    await wait(500);
-    highlightNodes(['node-case-management-adapter']);
-
-    await wait(900);
-    highlightNodes(['node-freshdesk']);
-
     await wait(600);
 
     // Show final assistant message
@@ -700,6 +698,10 @@ window.addEventListener('load', () => requestAnimationFrame(drawArrows));
     // Show badge
     badge.querySelector('span').textContent = '\u2713 Defect report created in Freshdesk';
     badge.classList.add('visible');
+
+    // Human in the Loop lights up after ticket creation
+    await wait(800);
+    highlightNodes(['node-human-in-the-loop']);
   }
 
   // ─── Step definitions ──────────────────────────────────────────────────
@@ -723,7 +725,7 @@ window.addEventListener('load', () => requestAnimationFrame(drawArrows));
         );
         await wait(350);
         await runArchCycle(
-          "I'm sorry to hear that. I can help you report this defect. Could you please provide your Customer ID so I can pull up the order details?"
+          "I'm sorry to hear that. I can help you report this defect. Could you please provide your Customer ID and the order number for this part?"
         );
       }
     },
@@ -734,7 +736,7 @@ window.addEventListener('load', () => requestAnimationFrame(drawArrows));
         addMessage("Sure, it's CUST-99121. The part was from order 457892.", 'customer');
         await wait(350);
         await runArchCycle(
-          "Thank you. I can see the order. Could you describe the leakage \u2014 is it at the inlet port, outlet port, or the shaft seal area?"
+          "Thank you, I've noted those details. Could you describe the leakage \u2014 is it at the inlet port, outlet port, or the shaft seal area?"
         );
       }
     },
