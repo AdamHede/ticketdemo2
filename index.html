@@ -31,6 +31,17 @@
       flex-direction: column;
       align-items: stretch;   /* children fill full width */
       overflow: hidden;
+      position: relative;
+    }
+
+    /* Logo in upper-left corner */
+    #logo {
+      position: absolute;
+      top: 14px;
+      left: 16px;
+      height: 28px;
+      width: auto;
+      z-index: 5;
     }
 
     /* Run Demo button row */
@@ -172,40 +183,10 @@
       overflow: hidden;
     }
 
-    /* Gradient sky: bright top → deep dark bottom */
+    /* Background image covering the right panel */
     #sky-grad {
       position: absolute; inset: 0;
-      background: linear-gradient(to bottom,
-        #4A90D9  0%,
-        #2E68B8 22%,
-        #1B3A6B 52%,
-        #0D2045 76%,
-        #0A1628 100%
-      );
-    }
-
-    /* Upper atmospheric scattering haze */
-    #sky-haze {
-      position: absolute; inset: 0;
-      background: radial-gradient(ellipse 130% 45% at 50% 0%,
-        rgba(120,190,255,0.13) 0%, transparent 70%);
-      pointer-events: none;
-    }
-
-    /* Warm horizon glow ~60% from top */
-    #horizon {
-      position: absolute;
-      top: 60%; left: -25%; right: -25%; height: 120px;
-      transform: translateY(-50%);
-      background: radial-gradient(ellipse 80% 60px at 50% 50%,
-        rgba(255,244,200,0.21) 0%, rgba(255,224,150,0.10) 45%, transparent 100%);
-      pointer-events: none;
-    }
-
-    .sky-svg {
-      position: absolute; inset: 0;
-      width: 100%; height: 100%;
-      pointer-events: none;
+      background: url('webpage_image.png') center center / cover no-repeat;
     }
 
     /* ════════════════════════════════════════════════════════════════
@@ -370,6 +351,8 @@
   ══════════════════════════════════════════════════════════════ -->
   <div id="left">
 
+    <img id="logo" src="logo.png" alt="Satair logo">
+
     <div id="btn-row">
       <button id="runDemoBtn">&#9654; Run Demo</button>
     </div>
@@ -505,67 +488,6 @@
   ══════════════════════════════════════════════════════════════ -->
   <div id="right">
     <div id="sky-grad"></div>
-    <div id="sky-haze"></div>
-    <div id="horizon"></div>
-
-    <!-- Wing shapes: large, sweeping semi-transparent white curves -->
-    <svg class="sky-svg" viewBox="0 0 800 900"
-         preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
-      <!-- Main wing body -->
-      <path d="M -100,880 C 100,680 380,590 940,540 L 940,620 C 380,670 100,760 -100,960 Z"
-            fill="rgba(255,255,255,0.055)"/>
-      <!-- Secondary wing layer -->
-      <path d="M -100,760 C 140,580 440,505 960,458 L 960,520 C 440,568 140,643 -100,824 Z"
-            fill="rgba(255,255,255,0.042)"/>
-      <!-- Leading-edge highlight -->
-      <path d="M -100,785 C 190,615 490,548 970,500"
-            stroke="rgba(255,255,255,0.17)" stroke-width="1.4" fill="none"/>
-      <path d="M -100,840 C 240,675 510,612 970,566"
-            stroke="rgba(255,255,255,0.07)" stroke-width="0.9" fill="none"/>
-      <!-- Upper winglet sweeping from top-right -->
-      <path d="M 560,0 C 625,75 680,185 715,330 C 740,430 750,520 755,600
-               L 740,604 C 734,524 724,434 699,334 C 663,190 608,80 545,6 Z"
-            fill="rgba(255,255,255,0.055)"/>
-      <path d="M 660,0 C 710,65 748,160 770,290 C 785,375 790,455 792,520
-               L 779,522 C 777,457 772,378 756,294 C 734,165 695,71 647,8 Z"
-            fill="rgba(255,255,255,0.038)"/>
-      <path d="M 570,0 C 640,90 695,220 728,380 C 745,460 752,540 755,610"
-            stroke="rgba(255,255,255,0.14)" stroke-width="1" fill="none"/>
-      <!-- Contrail lines -->
-      <line x1="-60" y1="258" x2="970" y2="192"
-            stroke="rgba(255,255,255,0.10)" stroke-width="1"/>
-      <line x1="-60" y1="274" x2="970" y2="208"
-            stroke="rgba(255,255,255,0.055)" stroke-width="0.7"/>
-      <!-- Cloud wisps -->
-      <ellipse cx="100" cy="72" rx="175" ry="21"
-               fill="rgba(255,255,255,0.045)" transform="rotate(-6,100,72)"/>
-      <ellipse cx="145" cy="98" rx="108" ry="13"
-               fill="rgba(255,255,255,0.030)" transform="rotate(-6,145,98)"/>
-      <ellipse cx="440" cy="185" rx="215" ry="16"
-               fill="rgba(255,255,255,0.028)" transform="rotate(-3,440,185)"/>
-      <!-- Sunray shafts -->
-      <polygon points="400,320 -20,75 65,75"  fill="rgba(255,240,185,0.020)"/>
-      <polygon points="400,320 800,55 718,55" fill="rgba(255,240,185,0.016)"/>
-    </svg>
-
-    <!-- Sparse star field (upper region) -->
-    <svg class="sky-svg" viewBox="0 0 800 900"
-         preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="52"  cy="36"  r="1.0" fill="rgba(255,255,255,0.68)"/>
-      <circle cx="178" cy="17"  r="1.2" fill="rgba(255,255,255,0.58)"/>
-      <circle cx="308" cy="53"  r="0.8" fill="rgba(255,255,255,0.72)"/>
-      <circle cx="492" cy="27"  r="1.0" fill="rgba(255,255,255,0.52)"/>
-      <circle cx="638" cy="46"  r="0.9" fill="rgba(255,255,255,0.62)"/>
-      <circle cx="748" cy="13"  r="1.1" fill="rgba(255,255,255,0.47)"/>
-      <circle cx="92"  cy="123" r="0.8" fill="rgba(255,255,255,0.44)"/>
-      <circle cx="262" cy="103" r="1.0" fill="rgba(255,255,255,0.50)"/>
-      <circle cx="428" cy="88"  r="0.7" fill="rgba(255,255,255,0.55)"/>
-      <circle cx="584" cy="116" r="1.0" fill="rgba(255,255,255,0.44)"/>
-      <circle cx="702" cy="86"  r="0.9" fill="rgba(255,255,255,0.52)"/>
-      <circle cx="762" cy="152" r="0.7" fill="rgba(255,255,255,0.40)"/>
-      <circle cx="38"  cy="194" r="0.8" fill="rgba(255,255,255,0.37)"/>
-      <circle cx="348" cy="158" r="0.7" fill="rgba(255,255,255,0.40)"/>
-    </svg>
 
     <!-- Chat widget -->
     <div id="chat-container" style="display:none;">
