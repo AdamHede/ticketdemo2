@@ -570,10 +570,10 @@ function drawArrows() {
     path(`M ${b.left},${b.cy + off} L ${a.right},${a.cy + off}`);
   }
 
-  // Layer 1 → Session Manager
+  // Layer 1 → ACE AI Orchestrator
   ['node-satair-market', 'node-self-service-portal', 'node-email-intake',
    'node-ai-case-management', 'node-human-in-the-loop']
-    .forEach(id => down(id, 'node-session-manager'));
+    .forEach(id => down(id, 'node-ace-ai-orchestrator'));
 
   bidir('node-session-manager', 'node-ace-ai-orchestrator');
   right('node-ace-ai-orchestrator', 'node-llm-service');
@@ -659,7 +659,7 @@ window.addEventListener('load', () => requestAnimationFrame(drawArrows));
 
   // ─── Architecture animation: standard customer message cycle ───────────
   // Satair Market → ACE AI Orchestrator → LLM Service + Session Manager
-  //   → Case Management Adapter → Freshdesk → typing → response
+  //   → Ticket Tool → Case Management Adapter → Freshdesk → typing → response
   // Highlights accumulate and persist until the next "Next" click clears them.
   async function runArchCycle(responseText) {
     await wait(300);
@@ -670,6 +670,9 @@ window.addEventListener('load', () => requestAnimationFrame(drawArrows));
 
     await wait(600);
     highlightNodes(['node-llm-service', 'node-session-manager']);
+
+    await wait(600);
+    highlightNodes(['node-ticket-tool']);
 
     await wait(600);
     highlightNodes(['node-case-management-adapter']);
@@ -699,8 +702,10 @@ window.addEventListener('load', () => requestAnimationFrame(drawArrows));
     badge.querySelector('span').textContent = '\u2713 Defect report created in Freshdesk';
     badge.classList.add('visible');
 
-    // Human in the Loop lights up after ticket creation
+    // Clear all highlights, then light up Human in the Loop
     await wait(800);
+    clearAllHighlights();
+    await wait(400);
     highlightNodes(['node-human-in-the-loop']);
   }
 
