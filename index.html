@@ -3,845 +3,734 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ACE Architecture Demo</title>
+  <title>Flashcard Flip Game</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    /* ─── Reset ─────────────────────────────────────────────────────── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { width: 100%; height: 100%; overflow: hidden; font-family: 'Inter', sans-serif; }
 
-    /* ─── Root layout: strict 50/50 split ───────────────────────────── */
-    #app {
-      display: flex;
-      width: 100vw;
-      height: 100vh;
+    :root {
+      --bg: #0f0f1a;
+      --surface: #1a1a2e;
+      --surface-light: #25253d;
+      --accent: #7c5cfc;
+      --accent-light: #9b82fc;
+      --green: #34d399;
+      --red: #f87171;
+      --yellow: #fbbf24;
+      --text: #e2e2f0;
+      --text-muted: #8888a4;
+      --radius: 16px;
     }
 
-    /* ════════════════════════════════════════════════════════════════
-       LEFT PANEL — white, architecture diagram
-    ════════════════════════════════════════════════════════════════ */
-    #left {
-      width: 50%;
-      height: 100vh;
-      background: #ffffff;
-      border-right: 1px solid #E8E8E8;
-      display: flex;
-      flex-direction: column;
-      align-items: stretch;   /* children fill full width */
-      overflow: hidden;
-      position: relative;
-    }
-
-    /* Logo in upper-left corner */
-    #logo {
-      position: absolute;
-      top: 14px;
-      left: 16px;
-      height: 28px;
-      width: auto;
-      z-index: 5;
-    }
-
-    /* Run Demo button row */
-    #btn-row {
-      flex-shrink: 0;
-      display: flex;
-      justify-content: center;
-      padding: 18px 0 0;
-    }
-
-    #runDemoBtn {
-      background: #00897B;
-      color: #fff;
-      border: none;
-      border-radius: 10px;
-      padding: 10px 28px;
-      font-size: 14px;
-      font-weight: 600;
+    body {
       font-family: 'Inter', sans-serif;
-      cursor: pointer;
-      letter-spacing: 0.015em;
-      transition: background 0.18s, box-shadow 0.18s;
-    }
-    #runDemoBtn:hover   { background: #00796B; box-shadow: 0 4px 20px rgba(0,137,123,0.36); }
-    #runDemoBtn:active  { background: #00695C; }
-    #runDemoBtn:disabled { background: #80CBC4; cursor: not-allowed; box-shadow: none; }
-
-    /* Diagram fills remaining height */
-    #diagram {
-      flex: 1;
-      position: relative;           /* arrow SVG is absolute inside here */
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
-      justify-content: space-evenly;
-      padding: 10px 16px 14px;
-      min-height: 0;
+      align-items: center;
     }
 
-    /* Arrow overlay — sits behind boxes */
-    #arrows {
-      position: absolute;
-      inset: 0;
+    /* ─── Header ─────────────────────────────────────── */
+    header {
+      width: 100%;
+      max-width: 900px;
+      padding: 32px 24px 0;
+      text-align: center;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent-light), var(--green));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 4px;
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    /* ─── Stats Bar ──────────────────────────────────── */
+    .stats-bar {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      margin: 24px 0 16px;
+      flex-wrap: wrap;
+    }
+
+    .stat {
+      background: var(--surface);
+      border: 1px solid var(--surface-light);
+      border-radius: 12px;
+      padding: 10px 20px;
+      text-align: center;
+      min-width: 100px;
+    }
+
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .stat-value.correct { color: var(--green); }
+    .stat-value.wrong { color: var(--red); }
+    .stat-value.remaining { color: var(--yellow); }
+
+    /* ─── Progress Bar ───────────────────────────────── */
+    .progress-container {
+      width: 100%;
+      max-width: 500px;
+      margin: 0 auto 28px;
+      padding: 0 24px;
+    }
+
+    .progress-track {
+      height: 6px;
+      background: var(--surface-light);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--green));
+      border-radius: 3px;
+      transition: width 0.4s ease;
+      width: 0%;
+    }
+
+    /* ─── Card Area ───────────────────────────────────── */
+    .card-area {
+      perspective: 1000px;
+      width: 100%;
+      max-width: 520px;
+      height: 300px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    .card {
       width: 100%;
       height: 100%;
-      pointer-events: none;
-      z-index: 0;
-      overflow: visible;
-    }
-
-    /* ─── Layer group ─────────────────────────────────────────────── */
-    .layer {
       position: relative;
-      z-index: 1;
-      display: flex;
-      flex-direction: column;
-      width: 100%;
+      cursor: pointer;
+      transform-style: preserve-3d;
+      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    .layer-label {
-      font-size: 11px;
-      font-weight: 600;
-      color: #888;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin-bottom: 6px;
-      white-space: nowrap;
+    .card.flipped {
+      transform: rotateY(180deg);
     }
 
-    .row {
-      display: flex;
-      gap: 6px;
-      width: 100%;
-    }
-
-    /* Gap between top and bottom sub-rows inside Layer 2 */
-    .row + .row { margin-top: 32px; }
-
-    /* ─── Box ─────────────────────────────────────────────────────── */
-    .box {
-      flex: 1;
-      min-width: 0;
-      background: #F7F7F7;
-      border: 1.5px solid #D0D0D0;
-      border-radius: 10px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
-      padding: 8px 6px;
-      min-height: 42px;
+    .card-face {
+      position: absolute;
+      inset: 0;
+      backface-visibility: hidden;
+      border-radius: var(--radius);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
+      padding: 32px;
       text-align: center;
+      border: 1px solid var(--surface-light);
     }
 
-    .box span.lbl {
-      font-size: 12px;
-      font-weight: 600;
-      color: #333;
-      line-height: 1.3;
+    .card-front {
+      background: linear-gradient(145deg, var(--surface), var(--surface-light));
     }
 
-    .box span.tag {
-      display: block;
-      font-size: 8.5px;
-      font-weight: 600;
+    .card-back {
+      background: linear-gradient(145deg, #1e1e3a, #2a2a4a);
+      transform: rotateY(180deg);
+    }
+
+    .card-label {
+      font-size: 0.7rem;
       text-transform: uppercase;
-      letter-spacing: 0.07em;
-      color: #C0C0C0;
-      margin-top: 3px;
-      font-style: normal;
-    }
-
-    /* Left-border accents */
-    .teal   { border-left: 3px solid #00897B; }
-    .blue   { border-left: 3px solid #1E88E5; }
-    .amber  { border-left: 3px solid #F59E0B; }
-
-    /* Sunset / deprecated style */
-    .sunset               { border: 1.5px dashed #CCCCCC !important; }
-    .sunset span.lbl      { color: #AAAAAA; font-style: italic; }
-
-    /* Active highlight (used by demo runner) */
-    .box {
-      transition: box-shadow 0.4s ease, border-color 0.4s ease;
-    }
-    .box.active {
-      box-shadow: 0 0 0 3px #00897B, 0 0 20px rgba(0,137,123,0.4);
-      border-color: #00897B !important;
-      transition: all 0.3s ease;
-    }
-
-    /* ════════════════════════════════════════════════════════════════
-       RIGHT PANEL — sky aesthetic only, no chat widget
-    ════════════════════════════════════════════════════════════════ */
-    #right {
-      width: 50%;
-      height: 100vh;
-      position: relative;
-      overflow: hidden;
-    }
-
-    /* Background image: full width visible, overflow clips bottom */
-    #sky-grad {
-      position: absolute; inset: 0;
-      background: url('webpage_image_long.png') top center / 100% auto no-repeat;
-      background-color: #f5f5f5;
-    }
-
-    /* ════════════════════════════════════════════════════════════════
-       CHAT WIDGET — overlaid on the sky panel
-    ════════════════════════════════════════════════════════════════ */
-    #chat-container {
-      position: absolute;
-      top: 50%; right: 24px;
-      transform: translateY(-50%);
-      width: 370px;
-      max-height: 70vh;
-      display: flex;
-      flex-direction: column;
-      z-index: 10;
-      pointer-events: auto;
-    }
-
-    #chat-header {
-      background: rgba(0,137,123,0.92);
-      color: #fff;
-      padding: 14px 18px;
-      border-radius: 14px 14px 0 0;
-      font-size: 14px;
+      letter-spacing: 1.5px;
+      color: var(--accent-light);
+      margin-bottom: 16px;
       font-weight: 600;
-      letter-spacing: 0.01em;
-      backdrop-filter: blur(8px);
     }
 
-    #chat-messages {
-      flex: 1;
-      overflow-y: auto;
-      background: rgba(255,255,255,0.95);
-      padding: 16px 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      min-height: 260px;
-      max-height: 52vh;
-      backdrop-filter: blur(8px);
-    }
-
-    #chat-footer {
-      background: rgba(245,245,245,0.95);
-      border-radius: 0 0 14px 14px;
-      padding: 12px 14px;
-      font-size: 12px;
-      color: #999;
-      text-align: center;
-      backdrop-filter: blur(8px);
-    }
-
-    .chat-msg {
-      max-width: 85%;
-      padding: 10px 14px;
-      border-radius: 14px;
-      font-size: 13px;
+    .card-text {
+      font-size: 1.25rem;
+      font-weight: 600;
       line-height: 1.5;
-      opacity: 0;
-      animation: chatFadeIn 0.35s ease forwards;
     }
 
-    @keyframes chatFadeIn {
-      from { opacity: 0; transform: translateY(6px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    .chat-msg.assistant {
-      background: #E0F2F1;
-      color: #1a1a1a;
-      align-self: flex-start;
-      border-bottom-left-radius: 4px;
-    }
-
-    .chat-msg.customer {
-      background: #00897B;
-      color: #fff;
-      align-self: flex-end;
-      border-bottom-right-radius: 4px;
-    }
-
-    /* Typing indicator */
-    .typing-indicator {
-      align-self: flex-start;
-      display: flex;
-      gap: 4px;
-      padding: 10px 16px;
-      background: #E0F2F1;
-      border-radius: 14px;
-      border-bottom-left-radius: 4px;
-      opacity: 0;
-      animation: chatFadeIn 0.25s ease forwards;
-    }
-    .typing-indicator span {
-      width: 7px; height: 7px;
-      background: #80CBC4;
-      border-radius: 50%;
-      animation: typingBounce 1.2s infinite;
-    }
-    .typing-indicator span:nth-child(2) { animation-delay: 0.15s; }
-    .typing-indicator span:nth-child(3) { animation-delay: 0.3s; }
-    @keyframes typingBounce {
-      0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
-      30%           { transform: translateY(-5px); opacity: 1; }
-    }
-
-    /* Freshdesk badge */
-    #freshdesk-badge {
-      display: none;
-      margin-top: 8px;
-      text-align: center;
-      opacity: 0;
-    }
-    #freshdesk-badge.visible {
-      display: block;
-      animation: chatFadeIn 0.4s ease forwards;
-    }
-    #freshdesk-badge span {
-      display: inline-block;
-      background: rgba(0,137,123,0.12);
-      color: #00897B;
-      font-size: 12px;
-      font-weight: 600;
-      padding: 6px 16px;
-      border-radius: 20px;
-      border: 1px solid rgba(0,137,123,0.25);
-    }
-
-    /* ─── Next / Restart button ────────────────────────────────── */
-    #nextBtn {
-      display: none;
+    .card-hint {
       position: absolute;
-      bottom: 28px;
-      right: 28px;
-      background: #00897B;
-      color: #fff;
+      bottom: 16px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    /* ─── Answer Buttons ─────────────────────────────── */
+    .actions {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      margin-top: 28px;
+      padding: 0 24px;
+    }
+
+    .btn {
+      padding: 12px 32px;
       border: none;
-      border-radius: 10px;
-      padding: 10px 22px;
-      font-size: 14px;
-      font-weight: 600;
+      border-radius: 12px;
       font-family: 'Inter', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
       cursor: pointer;
-      z-index: 20;
-      letter-spacing: 0.01em;
-      transition: background 0.18s, box-shadow 0.18s;
+      transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
-    #nextBtn:hover:not(:disabled) {
-      background: #00796B;
-      box-shadow: 0 4px 16px rgba(0,137,123,0.4);
-    }
-    #nextBtn:disabled {
-      opacity: 0.6;
+
+    .btn:hover { transform: translateY(-2px); }
+    .btn:active { transform: translateY(0); }
+
+    .btn:disabled {
+      opacity: 0.35;
       cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-correct {
+      background: var(--green);
+      color: #064e3b;
+      box-shadow: 0 4px 20px rgba(52, 211, 153, 0.3);
+    }
+
+    .btn-wrong {
+      background: var(--red);
+      color: #7f1d1d;
+      box-shadow: 0 4px 20px rgba(248, 113, 113, 0.3);
+    }
+
+    .btn-skip {
+      background: var(--surface-light);
+      color: var(--text-muted);
+    }
+
+    /* ─── Deck Selector ──────────────────────────────── */
+    .deck-selector {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin: 20px 0 8px;
+      flex-wrap: wrap;
+      padding: 0 24px;
+    }
+
+    .deck-btn {
+      padding: 8px 18px;
+      border: 1px solid var(--surface-light);
+      border-radius: 20px;
+      background: transparent;
+      color: var(--text-muted);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .deck-btn:hover {
+      border-color: var(--accent);
+      color: var(--text);
+    }
+
+    .deck-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    /* ─── Results Screen ─────────────────────────────── */
+    .results {
+      text-align: center;
+      padding: 40px 24px;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    .results h2 {
+      font-size: 1.8rem;
+      margin-bottom: 8px;
+    }
+
+    .results .score-big {
+      font-size: 4rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent-light), var(--green));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin: 16px 0;
+    }
+
+    .results p {
+      color: var(--text-muted);
+      margin-bottom: 24px;
+    }
+
+    .btn-restart {
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 4px 20px rgba(124, 92, 252, 0.3);
+    }
+
+    /* ─── Custom Cards Form ──────────────────────────── */
+    .custom-form {
+      width: 100%;
+      max-width: 520px;
+      margin: 12px auto 0;
+      padding: 0 24px;
+    }
+
+    .custom-toggle {
+      background: transparent;
+      border: 1px dashed var(--surface-light);
+      border-radius: 12px;
+      color: var(--text-muted);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      padding: 10px 20px;
+      cursor: pointer;
+      width: 100%;
+      transition: all 0.2s;
+    }
+
+    .custom-toggle:hover {
+      border-color: var(--accent);
+      color: var(--text);
+    }
+
+    .custom-inputs {
+      display: none;
+      margin-top: 12px;
+    }
+
+    .custom-inputs.visible {
+      display: block;
+    }
+
+    .custom-inputs textarea {
+      width: 100%;
+      height: 100px;
+      background: var(--surface);
+      border: 1px solid var(--surface-light);
+      border-radius: 12px;
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      padding: 14px;
+      resize: vertical;
+      outline: none;
+    }
+
+    .custom-inputs textarea:focus {
+      border-color: var(--accent);
+    }
+
+    .custom-inputs .help {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin: 6px 0 10px;
+    }
+
+    .btn-add-deck {
+      background: var(--accent);
+      color: #fff;
+      padding: 8px 20px;
+      font-size: 0.85rem;
+    }
+
+    /* ─── Shake animation ────────────────────────────── */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-8px); }
+      40% { transform: translateX(8px); }
+      60% { transform: translateX(-5px); }
+      80% { transform: translateX(5px); }
+    }
+
+    .shake {
+      animation: shake 0.4s ease;
+    }
+
+    /* ─── Pop animation ──────────────────────────────── */
+    @keyframes pop {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.08); }
+      100% { transform: scale(1); }
+    }
+
+    .pop {
+      animation: pop 0.3s ease;
+    }
+
+    /* ─── Responsive ─────────────────────────────────── */
+    @media (max-width: 600px) {
+      header h1 { font-size: 1.5rem; }
+      .card-area { height: 250px; }
+      .card-text { font-size: 1.05rem; }
+      .btn { padding: 10px 22px; font-size: 0.85rem; }
+      .stat { min-width: 80px; padding: 8px 14px; }
     }
   </style>
 </head>
 <body>
-<div id="app">
 
-  <!-- ══════════════════════════════════════════════════════════
-       LEFT PANEL — architecture diagram
-  ══════════════════════════════════════════════════════════════ -->
-  <div id="left">
+  <header>
+    <h1>Flashcard Flip</h1>
+    <p>Tap a card to reveal the answer, then rate yourself</p>
+  </header>
 
-    <img id="logo" src="logo.png" alt="Satair logo">
+  <!-- Deck selector -->
+  <div class="deck-selector" id="deckSelector"></div>
 
-    <div id="btn-row">
-      <button id="runDemoBtn">&#9654; Run Demo</button>
+  <!-- Stats -->
+  <div class="stats-bar" id="statsBar">
+    <div class="stat">
+      <div class="stat-value correct" id="correctCount">0</div>
+      <div class="stat-label">Correct</div>
     </div>
-
-    <div id="diagram">
-
-      <!-- Arrows drawn by JS into this SVG -->
-      <svg id="arrows"></svg>
-
-      <!-- ╔══════════════════════════════════════╗
-           ║  LAYER 1 — INPUTS & TOUCHPOINTS      ║
-           ╚══════════════════════════════════════╝ -->
-      <div class="layer">
-        <div class="layer-label">Inputs &amp; Touchpoints</div>
-        <div class="row">
-          <div class="box teal"  id="node-satair-market">
-            <span class="lbl">Satair Market</span>
-          </div>
-          <div class="box blue"  id="node-self-service-portal">
-            <span class="lbl">Self-Service Portal</span>
-          </div>
-          <div class="box"       id="node-email-intake">
-            <span class="lbl">Email Intake</span>
-          </div>
-          <div class="box teal"  id="node-ai-case-management">
-            <span class="lbl">AI Case Management</span>
-          </div>
-          <div class="box teal"  id="node-human-in-the-loop">
-            <span class="lbl">Human in the Loop</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- ╔══════════════════════════════════════╗
-           ║  LAYER 2 — AI ORCHESTRATION          ║
-           ╚══════════════════════════════════════╝ -->
-      <div class="layer">
-        <div class="layer-label">AI Orchestration</div>
-        <!-- top sub-row: orchestration core -->
-        <div class="row">
-          <div class="box amber" id="node-session-manager">
-            <span class="lbl">Session Manager</span>
-          </div>
-          <div class="box amber" id="node-ace-ai-orchestrator">
-            <span class="lbl">ACE AI Orchestrator</span>
-          </div>
-          <div class="box amber" id="node-llm-service">
-            <span class="lbl">LLM Service</span>
-          </div>
-        </div>
-        <!-- bottom sub-row: tool belt -->
-        <div class="row">
-          <div class="box amber" id="node-session-state">
-            <span class="lbl">Session State</span>
-          </div>
-          <div class="box amber" id="node-ticket-tool">
-            <span class="lbl">Ticket Tool</span>
-          </div>
-          <div class="box amber" id="node-sap-lookup-tool">
-            <span class="lbl">SAP Lookup Tool</span>
-          </div>
-          <div class="box amber" id="node-knowledge-tool">
-            <span class="lbl">Knowledge Tool</span>
-          </div>
-          <div class="box amber" id="node-case-history-tool">
-            <span class="lbl">Case History Tool</span>
-          </div>
-          <div class="box amber" id="node-response-draft-tool">
-            <span class="lbl">Response Draft Tool</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- ╔══════════════════════════════════════╗
-           ║  LAYER 3 — INTEGRATION LAYER         ║
-           ╚══════════════════════════════════════╝ -->
-      <div class="layer">
-        <div class="layer-label">Integration Layer</div>
-        <div class="row">
-          <div class="box"        id="node-case-management-adapter">
-            <span class="lbl">Case Management Adapter</span>
-          </div>
-          <div class="box"        id="node-sap-adapters">
-            <span class="lbl">SAP Adapters</span>
-          </div>
-          <div class="box"        id="node-knowledge-doc-adapters">
-            <span class="lbl">Knowledge &amp; Doc Adapters</span>
-          </div>
-          <div class="box sunset" id="node-llm-adapter">
-            <span class="lbl">LLM Adapter</span>
-            <span class="tag">sunset</span>
-          </div>
-          <div class="box sunset" id="node-legacy-automation">
-            <span class="lbl">Legacy Automation</span>
-            <span class="tag">sunset</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- ╔══════════════════════════════════════╗
-           ║  LAYER 4 — CORE SYSTEMS              ║
-           ╚══════════════════════════════════════╝ -->
-      <div class="layer">
-        <div class="layer-label">Core Systems</div>
-        <div class="row">
-          <div class="box"        id="node-freshdesk">
-            <span class="lbl">Freshdesk</span>
-          </div>
-          <div class="box"        id="node-sap-rpr">
-            <span class="lbl">SAP-RPR</span>
-          </div>
-          <div class="box"        id="node-sap-ap1">
-            <span class="lbl">SAP-AP1</span>
-          </div>
-          <div class="box"        id="node-sap-cc">
-            <span class="lbl">SAP-CC</span>
-          </div>
-          <div class="box"        id="node-symbio">
-            <span class="lbl">Symbio</span>
-          </div>
-          <div class="box sunset" id="node-lilly">
-            <span class="lbl">LILLY</span>
-            <span class="tag">to be replaced</span>
-          </div>
-        </div>
-      </div>
-
-    </div><!-- /#diagram -->
-  </div><!-- /#left -->
-
-  <!-- ══════════════════════════════════════════════════════════
-       RIGHT PANEL — dramatic sky aesthetic, no chat
-  ══════════════════════════════════════════════════════════════ -->
-  <div id="right">
-    <div id="sky-grad"></div>
-
-    <!-- Chat widget -->
-    <div id="chat-container" style="display:none;">
-      <div id="chat-header">Satair Customer Assistant</div>
-      <div id="chat-messages"></div>
-      <div id="chat-footer">Powered by ACE AI</div>
-      <div id="freshdesk-badge"><span></span></div>
+    <div class="stat">
+      <div class="stat-value wrong" id="wrongCount">0</div>
+      <div class="stat-label">Wrong</div>
     </div>
+    <div class="stat">
+      <div class="stat-value remaining" id="remainingCount">0</div>
+      <div class="stat-label">Remaining</div>
+    </div>
+  </div>
 
-    <!-- Next / Restart button -->
-    <button id="nextBtn">Next &#9654;</button>
-  </div><!-- /#right -->
+  <!-- Progress -->
+  <div class="progress-container">
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+  </div>
 
-</div><!-- /#app -->
+  <!-- Card -->
+  <div class="card-area" id="cardArea">
+    <div class="card" id="card" onclick="flipCard()">
+      <div class="card-face card-front">
+        <div class="card-label">Question</div>
+        <div class="card-text" id="frontText"></div>
+        <div class="card-hint">Click to reveal answer</div>
+      </div>
+      <div class="card-face card-back">
+        <div class="card-label">Answer</div>
+        <div class="card-text" id="backText"></div>
+        <div class="card-hint">Rate your answer below</div>
+      </div>
+    </div>
+  </div>
 
-<script>
-// ══════════════════════════════════════════════════════════════════════════
-//  ARROW DRAWING
-// ══════════════════════════════════════════════════════════════════════════
+  <!-- Buttons -->
+  <div class="actions" id="actions">
+    <button class="btn btn-wrong" id="btnWrong" disabled onclick="answer(false)">Incorrect</button>
+    <button class="btn btn-skip" id="btnSkip" onclick="skipCard()">Skip</button>
+    <button class="btn btn-correct" id="btnCorrect" disabled onclick="answer(true)">Got it!</button>
+  </div>
 
-function drawArrows() {
-  const svg  = document.getElementById('arrows');
-  const wrap = document.getElementById('diagram');
+  <!-- Results -->
+  <div class="results" id="results" style="display: none;"></div>
 
-  svg.innerHTML = '';
-  const cr = wrap.getBoundingClientRect();
-  svg.setAttribute('width',   cr.width);
-  svg.setAttribute('height',  cr.height);
-  svg.setAttribute('viewBox', `0 0 ${cr.width} ${cr.height}`);
+  <!-- Custom card form -->
+  <div class="custom-form">
+    <button class="custom-toggle" onclick="toggleCustom()">+ Add your own cards</button>
+    <div class="custom-inputs" id="customInputs">
+      <textarea id="customText" placeholder="Front | Back&#10;What is HTML? | HyperText Markup Language&#10;What is CSS? | Cascading Style Sheets"></textarea>
+      <div class="help">One card per line. Separate front and back with a pipe <strong>|</strong></div>
+      <button class="btn btn-add-deck" onclick="addCustomDeck()">Create Deck</button>
+    </div>
+  </div>
 
-  const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-  defs.innerHTML = `
-    <marker id="arr" viewBox="0 0 8 6" markerWidth="8" markerHeight="6"
-            refX="8" refY="3" orient="auto" markerUnits="userSpaceOnUse">
-      <polygon points="0 0, 8 3, 0 6" fill="#B0B0B0" opacity="0.75"/>
-    </marker>`;
-  svg.appendChild(defs);
+  <script>
+    // ─── Flashcard Decks ──────────────────────────────────────
+    const decks = {
+      "World Capitals": [
+        { q: "What is the capital of France?", a: "Paris" },
+        { q: "What is the capital of Japan?", a: "Tokyo" },
+        { q: "What is the capital of Brazil?", a: "Brasilia" },
+        { q: "What is the capital of Australia?", a: "Canberra" },
+        { q: "What is the capital of Canada?", a: "Ottawa" },
+        { q: "What is the capital of Egypt?", a: "Cairo" },
+        { q: "What is the capital of South Korea?", a: "Seoul" },
+        { q: "What is the capital of Argentina?", a: "Buenos Aires" },
+        { q: "What is the capital of Thailand?", a: "Bangkok" },
+        { q: "What is the capital of Germany?", a: "Berlin" },
+      ],
+      "Science": [
+        { q: "What planet is known as the Red Planet?", a: "Mars" },
+        { q: "What gas do plants absorb from the atmosphere?", a: "Carbon dioxide (CO2)" },
+        { q: "What is the chemical symbol for water?", a: "H2O" },
+        { q: "What is the speed of light?", a: "~300,000 km/s (186,000 mi/s)" },
+        { q: "What is the powerhouse of the cell?", a: "Mitochondria" },
+        { q: "What element has the atomic number 1?", a: "Hydrogen" },
+        { q: "What is the largest organ in the human body?", a: "Skin" },
+        { q: "What force keeps us on the ground?", a: "Gravity" },
+      ],
+      "Vocabulary": [
+        { q: "What does 'ephemeral' mean?", a: "Lasting for a very short time" },
+        { q: "What does 'ubiquitous' mean?", a: "Present, appearing, or found everywhere" },
+        { q: "What does 'pragmatic' mean?", a: "Dealing with things in a practical way" },
+        { q: "What does 'eloquent' mean?", a: "Fluent or persuasive in speaking or writing" },
+        { q: "What does 'resilient' mean?", a: "Able to recover quickly from difficulties" },
+        { q: "What does 'ambiguous' mean?", a: "Open to more than one interpretation" },
+        { q: "What does 'benevolent' mean?", a: "Well-meaning and kindly" },
+        { q: "What does 'candid' mean?", a: "Truthful and straightforward; frank" },
+      ],
+      "Math": [
+        { q: "What is the value of Pi (to 2 decimals)?", a: "3.14" },
+        { q: "What is the square root of 144?", a: "12" },
+        { q: "What is 7 x 8?", a: "56" },
+        { q: "What is a triangle with all equal sides called?", a: "Equilateral triangle" },
+        { q: "How many degrees in a circle?", a: "360 degrees" },
+        { q: "What is 15% of 200?", a: "30" },
+        { q: "What is the formula for the area of a circle?", a: "A = \u03C0r\u00B2" },
+        { q: "What is 2 to the power of 10?", a: "1024" },
+      ],
+    };
 
-  function box(id) {
-    const el = document.getElementById(id);
-    if (!el) return null;
-    const r = el.getBoundingClientRect();
-    const x = r.left - cr.left;
-    const y = r.top  - cr.top;
-    return { cx: x + r.width/2, cy: y + r.height/2,
-             top: y, bot: y + r.height, left: x, right: x + r.width };
-  }
+    // ─── Game State ────────────────────────────────────────────
+    let currentDeck = "World Capitals";
+    let cards = [];
+    let currentIndex = 0;
+    let correct = 0;
+    let wrong = 0;
+    let isFlipped = false;
 
-  function path(d, dashed) {
-    const el = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    el.setAttribute('d', d);
-    el.setAttribute('stroke', '#B0B0B0');
-    el.setAttribute('stroke-width', '1.5');
-    el.setAttribute('stroke-opacity', '0.5');
-    el.setAttribute('fill', 'none');
-    el.setAttribute('marker-end', 'url(#arr)');
-    if (dashed) el.setAttribute('stroke-dasharray', '5 3');
-    svg.appendChild(el);
-  }
+    // ─── DOM refs ──────────────────────────────────────────────
+    const card = document.getElementById("card");
+    const frontText = document.getElementById("frontText");
+    const backText = document.getElementById("backText");
+    const btnCorrect = document.getElementById("btnCorrect");
+    const btnWrong = document.getElementById("btnWrong");
+    const btnSkip = document.getElementById("btnSkip");
+    const correctEl = document.getElementById("correctCount");
+    const wrongEl = document.getElementById("wrongCount");
+    const remainingEl = document.getElementById("remainingCount");
+    const progressFill = document.getElementById("progressFill");
+    const cardArea = document.getElementById("cardArea");
+    const actionsEl = document.getElementById("actions");
+    const resultsEl = document.getElementById("results");
+    const statsBar = document.getElementById("statsBar");
 
-  function down(fromId, toId, dashed) {
-    const a = box(fromId), b = box(toId);
-    if (!a || !b) return;
-    const mid = (a.bot + b.top) / 2;
-    path(`M ${a.cx},${a.bot} C ${a.cx},${mid} ${b.cx},${mid} ${b.cx},${b.top}`, dashed);
-  }
+    // ─── Keyboard support ──────────────────────────────────────
+    document.addEventListener("keydown", (e) => {
+      if (resultsEl.style.display !== "none") return;
 
-  function right(fromId, toId) {
-    const a = box(fromId), b = box(toId);
-    if (!a || !b) return;
-    path(`M ${a.right},${a.cy} L ${b.left},${b.cy}`);
-  }
-
-  function bidir(aId, bId) {
-    const a = box(aId), b = box(bId);
-    if (!a || !b) return;
-    const off = 3.5;
-    path(`M ${a.right},${a.cy - off} L ${b.left},${b.cy - off}`);
-    path(`M ${b.left},${b.cy + off} L ${a.right},${a.cy + off}`);
-  }
-
-  // Layer 1 → ACE AI Orchestrator
-  ['node-satair-market', 'node-self-service-portal', 'node-email-intake',
-   'node-ai-case-management', 'node-human-in-the-loop']
-    .forEach(id => down(id, 'node-ace-ai-orchestrator'));
-
-  bidir('node-session-manager', 'node-ace-ai-orchestrator');
-  right('node-ace-ai-orchestrator', 'node-llm-service');
-
-  ['node-session-state', 'node-ticket-tool', 'node-sap-lookup-tool',
-   'node-knowledge-tool', 'node-case-history-tool', 'node-response-draft-tool']
-    .forEach(id => down('node-ace-ai-orchestrator', id));
-
-  down('node-ticket-tool',         'node-case-management-adapter');
-  down('node-sap-lookup-tool',     'node-sap-adapters');
-  down('node-knowledge-tool',      'node-knowledge-doc-adapters');
-  down('node-case-history-tool',   'node-case-management-adapter');
-  down('node-response-draft-tool', 'node-llm-adapter');
-
-  down('node-case-management-adapter', 'node-freshdesk');
-  down('node-sap-adapters',            'node-sap-rpr');
-  down('node-sap-adapters',            'node-sap-ap1');
-  down('node-sap-adapters',            'node-sap-cc');
-  down('node-knowledge-doc-adapters',  'node-symbio');
-  down('node-llm-adapter',             'node-lilly');
-  down('node-legacy-automation', 'node-freshdesk', true);
-}
-
-let _rt;
-window.addEventListener('resize', () => { clearTimeout(_rt); _rt = setTimeout(drawArrows, 60); });
-window.addEventListener('load', () => requestAnimationFrame(drawArrows));
-
-
-// ══════════════════════════════════════════════════════════════════════════
-//  DEMO LOGIC
-// ══════════════════════════════════════════════════════════════════════════
-
-(function() {
-  const runBtn    = document.getElementById('runDemoBtn');
-  const nextBtn   = document.getElementById('nextBtn');
-  const chatBox   = document.getElementById('chat-container');
-  const msgArea   = document.getElementById('chat-messages');
-  const badge     = document.getElementById('freshdesk-badge');
-
-  let demoActive  = false;
-  let currentStep = -1;
-  let animating   = false;   // true while a step sequence is playing
-
-  // ─── Utility: promise-based delay ──────────────────────────────────────
-  function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
-
-  // ─── Highlight helpers ─────────────────────────────────────────────────
-  function highlightNodes(ids) {
-    ids.forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.classList.add('active');
+      if (e.code === "Space" || e.code === "Enter") {
+        e.preventDefault();
+        flipCard();
+      } else if (e.code === "ArrowLeft" && isFlipped) {
+        answer(false);
+      } else if (e.code === "ArrowRight" && isFlipped) {
+        answer(true);
+      } else if (e.code === "ArrowDown") {
+        skipCard();
+      }
     });
-  }
 
-  function clearAllHighlights() {
-    document.querySelectorAll('.box.active').forEach(el => el.classList.remove('active'));
-  }
-
-  // ─── Chat message helpers ──────────────────────────────────────────────
-  function addMessage(text, role) {
-    const div = document.createElement('div');
-    div.className = 'chat-msg ' + role;
-    div.textContent = text;
-    msgArea.appendChild(div);
-    msgArea.scrollTop = msgArea.scrollHeight;
-    return div;
-  }
-
-  function showTyping() {
-    const div = document.createElement('div');
-    div.className = 'typing-indicator';
-    div.innerHTML = '<span></span><span></span><span></span>';
-    div.id = 'typing';
-    msgArea.appendChild(div);
-    msgArea.scrollTop = msgArea.scrollHeight;
-    return div;
-  }
-
-  function removeTyping() {
-    const el = document.getElementById('typing');
-    if (el) el.remove();
-  }
-
-  // ─── Architecture animation: standard customer message cycle ───────────
-  // Satair Market → ACE AI Orchestrator → LLM Service + Session Manager
-  //   → Ticket Tool → Case Management Adapter → Freshdesk → typing → response
-  // Highlights accumulate and persist until the next "Next" click clears them.
-  async function runArchCycle(responseText) {
-    await wait(300);
-    highlightNodes(['node-satair-market']);
-
-    await wait(600);
-    highlightNodes(['node-ace-ai-orchestrator']);
-
-    await wait(600);
-    highlightNodes(['node-llm-service', 'node-session-manager']);
-
-    await wait(600);
-    highlightNodes(['node-ticket-tool']);
-
-    await wait(600);
-    highlightNodes(['node-case-management-adapter']);
-
-    await wait(600);
-    highlightNodes(['node-freshdesk']);
-
-    await wait(700);
-    showTyping();
-
-    await wait(800);
-    removeTyping();
-    addMessage(responseText, 'assistant');
-  }
-
-  // ─── Final step: show confirmation message, badge, and Human in the Loop ──
-  async function runFinalSequence() {
-    await wait(600);
-
-    // Show final assistant message
-    addMessage(
-      '\u2713 Your defect report has been filed and a replacement is being arranged. A service agent will follow up with the return shipping details shortly. Is there anything else I can help you with?',
-      'assistant'
-    );
-
-    // Show badge
-    badge.querySelector('span').textContent = '\u2713 Defect report created in Freshdesk';
-    badge.classList.add('visible');
-
-    // Clear all highlights, then light up Human in the Loop
-    await wait(800);
-    clearAllHighlights();
-    await wait(400);
-    highlightNodes(['node-human-in-the-loop']);
-  }
-
-  // ─── Step definitions ──────────────────────────────────────────────────
-  const STEPS = [
-    // Step 0: greeting (triggered by Run Demo — no Next click needed)
-    {
-      action: async function() {
-        addMessage(
-          "Hello! I'm your Satair Customer Assistant. How can I help you today?",
-          'assistant'
-        );
-      }
-    },
-    // Step 1
-    {
-      action: async function() {
-        await wait(300);
-        addMessage(
-          "Hi, we received a hydraulic pump (PN: AH-65042) for our A320 and it's showing signs of external leakage. We need to report the defect.",
-          'customer'
-        );
-        await wait(350);
-        await runArchCycle(
-          "I'm sorry to hear that. I can help you report this defect. Could you please provide your Customer ID and the order number for this part?"
-        );
-      }
-    },
-    // Step 2
-    {
-      action: async function() {
-        await wait(300);
-        addMessage("Sure, it's CUST-99121. The part was from order 457892.", 'customer');
-        await wait(350);
-        await runArchCycle(
-          "Thank you, I've noted those details. Could you describe the leakage \u2014 is it at the inlet port, outlet port, or the shaft seal area?"
-        );
-      }
-    },
-    // Step 3 (final)
-    {
-      action: async function() {
-        await wait(300);
-        addMessage("It's leaking from the shaft seal. We noticed it during the incoming inspection before installation.", 'customer');
-        await wait(350);
-        await runArchCycle(
-          "Understood \u2014 shaft seal leakage on PN AH-65042, caught at incoming inspection. I'll create a defect report and arrange a replacement. Let me open a ticket for you now."
-        );
-        await runFinalSequence();
-      }
-    }
-  ];
-
-  const LAST_STEP = STEPS.length - 1;
-
-  // ─── Next button click ─────────────────────────────────────────────────
-  nextBtn.addEventListener('click', async function() {
-    if (animating) return;
-
-    // If at restart state, reset the demo
-    if (currentStep > LAST_STEP - 1 && nextBtn.textContent === 'Restart') {
-      resetDemo();
-      return;
+    // ─── Build deck buttons ────────────────────────────────────
+    function renderDeckButtons() {
+      const container = document.getElementById("deckSelector");
+      container.innerHTML = "";
+      Object.keys(decks).forEach((name) => {
+        const btn = document.createElement("button");
+        btn.className = "deck-btn" + (name === currentDeck ? " active" : "");
+        btn.textContent = name;
+        btn.onclick = () => switchDeck(name);
+        container.appendChild(btn);
+      });
     }
 
-    currentStep++;
-    if (currentStep > LAST_STEP) return;
-
-    animating = true;
-    nextBtn.disabled = true;
-
-    // Fade out previous highlights
-    clearAllHighlights();
-
-    await STEPS[currentStep].action();
-
-    animating = false;
-    nextBtn.disabled = false;
-
-    // After final step, change to Restart
-    if (currentStep >= LAST_STEP) {
-      nextBtn.textContent = 'Restart';
+    function switchDeck(name) {
+      currentDeck = name;
+      renderDeckButtons();
+      startGame();
     }
-  });
 
-  // ─── Run Demo button ──────────────────────────────────────────────────
-  runBtn.addEventListener('click', function() {
-    if (demoActive) {
-      resetDemo();
-      return;
+    // ─── Shuffle ───────────────────────────────────────────────
+    function shuffle(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
     }
-    startDemo();
-  });
 
-  async function startDemo() {
-    demoActive   = true;
-    currentStep  = 0;
-    animating    = true;
+    // ─── Start / Reset ────────────────────────────────────────
+    function startGame() {
+      cards = shuffle(decks[currentDeck]);
+      currentIndex = 0;
+      correct = 0;
+      wrong = 0;
+      isFlipped = false;
 
-    // Show chat container
-    chatBox.style.display = 'flex';
-    msgArea.innerHTML = '';
-    badge.classList.remove('visible');
-    badge.style.display = '';
-    clearAllHighlights();
+      card.classList.remove("flipped");
+      cardArea.style.display = "";
+      actionsEl.style.display = "";
+      statsBar.style.display = "";
+      resultsEl.style.display = "none";
 
-    // Run Step 0 (greeting)
-    await STEPS[0].action();
+      updateStats();
+      showCard();
+    }
 
-    animating = false;
+    // ─── Show current card ─────────────────────────────────────
+    function showCard() {
+      if (currentIndex >= cards.length) {
+        showResults();
+        return;
+      }
+      isFlipped = false;
+      card.classList.remove("flipped");
+      btnCorrect.disabled = true;
+      btnWrong.disabled = true;
 
-    // Show Next button
-    nextBtn.textContent = 'Next \u25B6';
-    nextBtn.style.display = 'block';
-    nextBtn.disabled = false;
-  }
+      const c = cards[currentIndex];
+      frontText.textContent = c.q;
+      backText.textContent = c.a;
+    }
 
-  function resetDemo() {
-    demoActive  = false;
-    currentStep = -1;
-    animating   = false;
+    // ─── Flip ──────────────────────────────────────────────────
+    function flipCard() {
+      if (currentIndex >= cards.length) return;
+      isFlipped = !isFlipped;
+      card.classList.toggle("flipped");
+      if (isFlipped) {
+        btnCorrect.disabled = false;
+        btnWrong.disabled = false;
+      } else {
+        btnCorrect.disabled = true;
+        btnWrong.disabled = true;
+      }
+    }
 
-    // Clear everything instantly
-    msgArea.innerHTML = '';
-    clearAllHighlights();
-    badge.classList.remove('visible');
-    badge.style.display = '';
-    nextBtn.style.display = 'none';
-    nextBtn.disabled = false;
+    // ─── Answer ────────────────────────────────────────────────
+    function answer(wasCorrect) {
+      if (!isFlipped) return;
 
-    // Wait 400ms then restart
-    setTimeout(function() {
-      startDemo();
-    }, 400);
-  }
-})();
-</script>
+      if (wasCorrect) {
+        correct++;
+        cardArea.classList.add("pop");
+        setTimeout(() => cardArea.classList.remove("pop"), 300);
+      } else {
+        wrong++;
+        cardArea.classList.add("shake");
+        setTimeout(() => cardArea.classList.remove("shake"), 400);
+      }
+
+      currentIndex++;
+      updateStats();
+
+      setTimeout(() => showCard(), 350);
+    }
+
+    // ─── Skip ──────────────────────────────────────────────────
+    function skipCard() {
+      if (currentIndex >= cards.length) return;
+      // move current card to end
+      cards.push(cards[currentIndex]);
+      cards.splice(currentIndex, 1);
+      isFlipped = false;
+      card.classList.remove("flipped");
+      showCard();
+    }
+
+    // ─── Update Stats ──────────────────────────────────────────
+    function updateStats() {
+      const total = cards.length;
+      const remaining = total - currentIndex;
+      correctEl.textContent = correct;
+      wrongEl.textContent = wrong;
+      remainingEl.textContent = remaining;
+      const pct = total > 0 ? ((currentIndex) / total) * 100 : 0;
+      progressFill.style.width = pct + "%";
+    }
+
+    // ─── Results ───────────────────────────────────────────────
+    function showResults() {
+      cardArea.style.display = "none";
+      actionsEl.style.display = "none";
+
+      const total = correct + wrong;
+      const pct = total > 0 ? Math.round((correct / total) * 100) : 0;
+      progressFill.style.width = "100%";
+
+      let emoji, message;
+      if (pct === 100) { emoji = "&#127942;"; message = "Perfect score! You're a master!"; }
+      else if (pct >= 80) { emoji = "&#11088;"; message = "Great job! Almost perfect!"; }
+      else if (pct >= 60) { emoji = "&#128170;"; message = "Good effort! Keep practicing!"; }
+      else { emoji = "&#128218;"; message = "Keep studying, you'll get there!"; }
+
+      resultsEl.style.display = "block";
+      resultsEl.innerHTML = `
+        <h2>${emoji} Round Complete!</h2>
+        <div class="score-big">${pct}%</div>
+        <p>${correct} correct out of ${total} cards &mdash; ${message}</p>
+        <button class="btn btn-restart" onclick="startGame(); resultsEl.style.display='none';">
+          Play Again
+        </button>
+      `;
+    }
+
+    // ─── Custom Deck ───────────────────────────────────────────
+    function toggleCustom() {
+      document.getElementById("customInputs").classList.toggle("visible");
+    }
+
+    function addCustomDeck() {
+      const raw = document.getElementById("customText").value.trim();
+      if (!raw) return;
+
+      const lines = raw.split("\n").filter(l => l.includes("|"));
+      if (lines.length === 0) return;
+
+      const newCards = lines.map(line => {
+        const [front, ...rest] = line.split("|");
+        return { q: front.trim(), a: rest.join("|").trim() };
+      });
+
+      const name = "Custom " + (Object.keys(decks).filter(k => k.startsWith("Custom")).length + 1);
+      decks[name] = newCards;
+      currentDeck = name;
+
+      document.getElementById("customText").value = "";
+      document.getElementById("customInputs").classList.remove("visible");
+
+      renderDeckButtons();
+      startGame();
+    }
+
+    // ─── Init ──────────────────────────────────────────────────
+    renderDeckButtons();
+    startGame();
+  </script>
 </body>
 </html>
